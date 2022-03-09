@@ -1,0 +1,1 @@
+The 3d model contained in the current folder is converted from the blender file, downloaded from https://free3d.com/3d-model/birch-tree-48016.html. The author is sandralavixen (https://free3d.com/user/sandralavixen). The usage of the model is permitted by the author via its `Personal Use License`.
