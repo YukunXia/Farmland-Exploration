@@ -1,3 +1,8 @@
+## Environments
+
+- farmland_with_walls.world
+![farmland_with_walls](images/farmland_with_walls.jpg)
+
 ## Prerequisites
 
 - Install Husky packages

@@ -1,0 +1,1 @@
+The 3d model contained in the current folder is originated from [this link](https://free3d.com/3d-model/stalks-of-corn-v2--815609.html), and was postprocessed via blender. The author is printable_models (https://free3d.com/user/printable_models). The usage of the model is permitted by the author via its `Personal Use License`.
