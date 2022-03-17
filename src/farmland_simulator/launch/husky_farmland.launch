@@ -24,6 +24,9 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCL
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
 <launch>
+  <!-- CAUTIOUS: Limited by ROS1's design, the consistency between rosparam and arg in launch files has to be checked manually -->
+  <rosparam command="load" file="$(find farmland_simulator)/config/default.yaml" />
+
   <!-- Change which world you wish to use by modifying this line -->
   <!-- <arg name="world_name" default="$(find farmland_simulator)/worlds/rough_terrain_hard.world"/>  -->
   <!-- <arg name="world_name" default="$(find farmland_simulator)/worlds/flat_terrain_easy.world"/>  -->
@@ -42,6 +45,7 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
   <!-- Use for debug purposes -->
   <arg name="verbose" value="false"/> 
 
+  <!-- CAUTIOUS: Limited by ROS1's design, the consistency between rosparam and arg in launch files has to be checked manually -->
   <include file="$(find farmland_simulator)/launch/husky_velodyne_spawn.launch"/>
 
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find farmland_simulator)/rviz/husky_velodyne.rviz" output="screen"/>

@@ -7,6 +7,9 @@
 
 - Install Husky packages
     - https://www.clearpathrobotics.com/assets/guides/kinetic/ros/Drive%20a%20Husky.html
+- Install PCL
+    - https://pointclouds.org/downloads/
+    - `sudo apt install libpcl-dev`
 
 ## Instructions
 
