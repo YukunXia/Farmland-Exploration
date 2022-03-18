@@ -11,3 +11,5 @@ robot_init_yaw: 0.0
 robot_bbox_x: 0.9854
 robot_bbox_y: 0.6851
 robot_bbox_z: 1.08983
+robot_wheel_radius: 0.1651
+robot_mobility_height_ratio: 0.25

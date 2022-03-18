@@ -13,10 +13,16 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   pcl_ros
   gazebo_msgs
+  tf2
+  tf2_ros
+  tf2_geometry_msgs
+  tf2_eigen
+  eigen_conversions
 )
 
 find_package(PCL REQUIRED)
 add_definitions(${PCL_DEFINITIONS})
+find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -123,6 +129,11 @@ catkin_package(
 include_directories(
 # include
   ${catkin_INCLUDE_DIRS}
+  ${PCL_INCLUDE_DIRS}
+)
+
+link_directories(
+  ${PCL_LIBRARY_DIRS}
 )
 
 ## Declare a C++ library
@@ -152,7 +163,7 @@ add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catk
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(${PROJECT_NAME}_node
-  ${catkin_LIBRARIES}
+  ${catkin_LIBRARIES} ${PCL_LIBRARIES} Eigen3::Eigen
 )
 
 #############
