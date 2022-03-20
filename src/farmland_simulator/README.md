@@ -71,3 +71,13 @@ Initial z is not 0, but ~0.13227. That may come from the height of base_link fro
  0      0      1 0.9127
  0      0      0      1
 ```
+
+## Velodyne Parameters
+
+According to [`velodyne_simulator`'s document](https://bitbucket.org/DataspeedInc/velodyne_simulator/src/master/):
+> samples Nuber of horizontal rotating samples. Default VLP-16: 1875, HDL-32E: 2187
+
+According to VLP-16's [official document](https://www.amtechs.co.jp/product/VLP-16-Puck.pdf):
+> Angular resolution (horizontal/azimuth): 0.1° - 0.4°
+
+If I understand the meaning of the `rotating samples` correctly, the default VLP-16 horizontal resolution is 360/1875 deg (~ 0.192 deg). So the maximum range for a sphere to be guaranteed to be detectable is $\text{sphere_diameter}/(0.192/180*PI)$. If sphere_diameter is 0.1 / 0.05m, the range should be ~28.66 / 14.33 m. In this sensor, with VLP-16, we could only trust the update within at most 28.66m.

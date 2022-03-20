@@ -14,7 +14,7 @@
         <param name = "height_map" type="bool" value = "true" />
 
         <!-- Maximum range in meter for inserting point cloud data when dynamically building a map. Limiting the range to something useful (e.g. 5m) prevents spurious erroneous points far away from the robot. -->
-        <param name = "sensor_model/max_range" type="double" value = "-1" />
+        <param name = "sensor_model/max_range" type="double" value = "20.0" />
 
         <!-- Minimum and maximum probability for clamping when dynamically building a map -->
         <param name = "sensor_model/min" type="double" value = "0.12" />

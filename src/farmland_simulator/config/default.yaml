@@ -4,8 +4,8 @@ wall_thickness: 0.15
 occupancy_grid_resolution: 0.1
 
 robot_name: 'husky'
-robot_init_x: 20.0
-robot_init_y: 20.0
+robot_init_x: 19.0
+robot_init_y: 19.0
 robot_init_z: 00.0
 robot_init_yaw: 0.0
 robot_bbox_x: 0.9854
