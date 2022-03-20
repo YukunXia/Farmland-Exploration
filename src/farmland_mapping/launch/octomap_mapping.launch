@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="octomap_server" type="octomap_server_node" name="octomap_server">
+        <!-- Static global frame in which the map will be published. A transform from sensor data to this frame needs to be available when dynamically building maps. -->
+        <param name="frame_id" type="str" value="world" />
+
+        <!-- Resolution in meter for the map when starting with an empty map. Otherwise the loaded file's resolution is used. -->
+        <param name="resolution" type="double" value="0.10" />
+
+        <!-- The robot's base frame in which ground plane detection is performed (if enabled) -->
+        <param name="base_frame_id" type="str" value="base_footprint" />
+
+        <!-- Whether visualization should encode height with different colors -->
+        <param name = "height_map" type="bool" value = "true" />
+
+        <!-- Maximum range in meter for inserting point cloud data when dynamically building a map. Limiting the range to something useful (e.g. 5m) prevents spurious erroneous points far away from the robot. -->
+        <param name = "sensor_model/max_range" type="double" value = "-1" />
+
+        <!-- Minimum and maximum probability for clamping when dynamically building a map -->
+        <param name = "sensor_model/min" type="double" value = "0.12" />
+        <param name = "sensor_model/max" type="double" value = "0.97" />
+
+        <!-- Whether topics are published latched or only once per change. For maximum performance when building a map (with frequent updates), set to false. When set to true, on every map change all topics and visualizations will be created. -->
+        <!-- True for a static map, false if no initial map is given -->
+        <param name = "latch" type="bool" value = "false" />
+
+        <!-- Whether the ground plane should be detected and ignored from scan data when dynamically building a map, using pcl::SACMODEL_PERPENDICULAR_PLANE. This clears everything up to the ground, but will not insert the ground as obstacle in the map. If this is enabled, it can be further configured with the ~ground_filter/... parameters. -->
+        <param name = "filter_ground" type="bool" value = "true" />
+
+        <!-- Distance threshold for points (in z direction) to be segmented to the ground plane -->
+        <param name = "ground_filter/distance" type="double" value = "0.04" />
+        <!-- Angular threshold of the detected plane from the horizontal plane to be detected as ground -->
+        <param name = "ground_filter/angle" type="double" value = "0.15" />
+        <!-- Distance threshold from z=0 for a plane to be detected as ground (4th coefficient of the plane equation from PCL) -->
+        <param name = "ground_filter/plane_distance" type="double" value = "0.07" />
+
+
+        <!-- Minimum and maximum height of points to consider for insertion in the callback. Any point outside of this intervall will be discarded before running any insertion or ground plane filtering. You can do a rough filtering based on height with this, but if you enable the ground_filter this interval needs to include the ground plane. -->
+        <!-- <param name = "pointcloud_min_z" type="double" value = "-infinity" /> -->
+        <param name = "pointcloud_max_z" type="double" value = "1.10" />
+
+        <!-- Minimum and maximum height of occupied cells to be consider in the final map. This ignores all occupied voxels outside of the interval when sending out visualizations and collision maps, but will not affect the actual octomap representation. -->
+        <!-- <param name = "occupancy_min_z" type="double" value = "-infinity" /> -->
+        <!-- <param name = "occupancy_max_z" type="double" value = "+infinity" /> -->
+
+        <remap from="/cloud_in" to="/points" />
+    </node>
+
+    <node name="farmland_mapping_node" pkg="farmland_mapping" type="farmland_mapping_node" output="screen" />
+</launch>

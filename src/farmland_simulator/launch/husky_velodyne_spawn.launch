@@ -29,13 +29,16 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
 
   <arg name="robot_namespace" default="/"/>
 
-  <arg name="robot_init_x" default="20.0"/>
-  <arg name="robot_init_y" default="20.0"/>
+  <arg name="robot_init_x" default="15.0"/>
+  <arg name="robot_init_y" default="15.0"/>
   <arg name="robot_init_z" default="0.0"/>
   <arg name="robot_init_yaw" default="0.0"/>
 
   <!-- Optionally disable teleop control -->
   <arg name="joystick" default="true" />
+  <arg name="gpu" default="true"/>
+  <arg name="organize_cloud" default="false"/>
+  <arg name="point_cloud_topic" default="points"/>
 
   <group ns="$(arg robot_namespace)">
 
@@ -56,24 +59,54 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
     <!-- For single master bringup, run robot control on the gazebo master -->
     <!-- Note that husky_description/description.launch is already included in husky_control/control.launch. -->
     <!-- <group unless="$(arg multimaster)"> -->
-      <include file="$(find husky_control)/launch/control.launch">
+      <!-- <include file="$(find husky_control)/launch/control.launch"> -->
         <!-- <arg name="multimaster" value="$(arg multimaster)"/> -->
-      </include>
-      <include file="$(find husky_control)/launch/teleop.launch">
-        <arg name="joystick" value="$(arg joystick)" />
-      </include>
+      <!-- </include> -->
+      <!-- <include file="$(find husky_control)/launch/teleop.launch"> -->
+        <!-- <arg name="joystick" value="$(arg joystick)" /> -->
+      <!-- </include> -->
     <!-- </group> -->
+
+    <!-- Load robot description -->
+    <include file="$(find husky_description)/launch/description.launch" />
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+
+    <!-- Load controller configuration -->
+    <rosparam command="load" file="$(find husky_control)/config/control.yaml" />
+
+    <!-- Spawn controllers -->
+    <node name="base_controller_spawner" pkg="controller_manager" type="spawner"
+          args="husky_joint_publisher husky_velocity_controller"/>
+    <rosparam param="wheel_radius_multiplier" ns="husky_velocity_controller" subst_value="True">
+          $(optenv HUSKY_WHEEL_MULTIPLIER 1.0)
+    </rosparam>
+    <node pkg="twist_mux" type="twist_mux" name="twist_mux">
+      <rosparam command="load" file="$(find husky_control)/config/twist_mux.yaml" />
+      <remap from="cmd_vel_out" to="husky_velocity_controller/cmd_vel"/>
+    </node>
+    <arg name="config_extras"
+       default="$(eval optenv('HUSKY_CONFIG_EXTRAS', find('husky_control') + '/config/empty.yaml'))"/>
+    <!-- Override the default control parameters, see config/empty.yaml for default. -->
+    <rosparam command="load" file="$(arg config_extras)" />
 
     <!-- Additional nodes for specific accessories -->
     <!-- <group if="$(optenv HUSKY_REALSENSE_ENABLED 0)"> -->
       <!-- <include file="$(find husky_gazebo)/launch/realsense.launch" /> -->
     <!-- </group> -->
 
-    <param name="robot_description" command="
-      $(find xacro)/xacro '$(find husky_description)/urdf/husky.urdf.xacro'
+    <!-- <param name="robot_description" command="
+      $(find xacro)/xacro '$(find farmland_simulator)/urdf/husky.urdf.xacro'
       laser_3d_enabled:='$(optenv HUSKY_LASER_3D_ENABLED true)'
       robot_namespace:=$(arg robot_namespace)
+    " /> -->
+
+    <param name="robot_description" command="
+      $(find xacro)/xacro '$(find farmland_simulator)/urdf/husky.urdf.xacro'
+      laser_3d_enabled:='true' robot_namespace:=$(arg robot_namespace) 
+      organize_cloud:=$(arg organize_cloud) gpu:=$(arg gpu)
+      point_cloud_topic:=$(arg point_cloud_topic)
     " />
+
 
     <!-- Spawn robot in gazebo -->
     <node name="spawn_husky_model" pkg="gazebo_ros" type="spawn_model"

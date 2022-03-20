@@ -48,7 +48,7 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
   <!-- CAUTIOUS: Limited by ROS1's design, the consistency between rosparam and arg in launch files has to be checked manually -->
   <include file="$(find farmland_simulator)/launch/husky_velodyne_spawn.launch"/>
 
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find farmland_simulator)/rviz/husky_velodyne.rviz" output="screen"/>
+  <!-- <node name="rviz" pkg="rviz" type="rviz" args="-d $(find farmland_simulator)/rviz/husky_velodyne.rviz" output="screen"/> -->
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find farmland_simulator)/rviz/farmland_world.rviz" output="screen"/>
 
-  <!-- <node name="farmland_mapping_node" pkg="farmland_mapping" type="farmland_mapping_node" output="screen" /> -->
 </launch>

@@ -1,4 +1,4 @@
-world_size: 60.0
+world_size: 40.0
 wall_thickness: 0.15
 
 occupancy_grid_resolution: 0.1

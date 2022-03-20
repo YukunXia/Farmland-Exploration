@@ -10,6 +10,10 @@
 - Install PCL
     - https://pointclouds.org/downloads/
     - `sudo apt install libpcl-dev`
+- Install octomap packages
+    - http://wiki.ros.org/octomap_mapping?distro=noetic
+    - `sudo apt-get install ros-noetic-octomap ros-noetic-octomap-mapping`
+    - `sudo apt-get install ros-noetic-octomap-rviz-plugins` for rviz visualization
 
 ## Instructions
 
