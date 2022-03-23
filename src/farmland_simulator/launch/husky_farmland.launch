@@ -28,9 +28,10 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
   <rosparam command="load" file="$(find farmland_simulator)/config/default.yaml" />
 
   <!-- Change which world you wish to use by modifying this line -->
-  <!-- <arg name="world_name" default="$(find farmland_simulator)/worlds/rough_terrain_hard.world"/>  -->
-  <!-- <arg name="world_name" default="$(find farmland_simulator)/worlds/flat_terrain_easy.world"/>  -->
-  <arg name="world_name" default="farmland_with_walls.world"/> 
+  <!-- <arg name="world_name" default="farmland_with_walls.world"/>  -->
+  <!-- <arg name="world_name" default="farmland_with_walls_simplified.world"/>  -->
+  <!-- <arg name="world_name" default="cylinder_world.world"/>  -->
+  <arg name="world_name" default="cylinder_world_simplified.world"/> 
 
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="world_name" value="$(find farmland_simulator)/worlds/$(arg world_name)"/>

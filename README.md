@@ -37,3 +37,12 @@ angular:
         y: 0.0
         z: 0.0" -r 10
 ```
+
+### Notes
+
+* To switch the simulation environment, please change the `world_name` arg in `husky_farmland.launch`. Options are listed below.
+    * farmland_test.world
+    * farmland_with_walls.world
+    * farmland_with_walls_simplified.world
+    * cylinder_world.world
+    * cylinder_world_simplified.world
