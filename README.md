@@ -1,7 +1,7 @@
 ## Environments
 
 - farmland_with_walls.world
-![farmland_with_walls](images/farmland_with_walls.jpg)
+![farmland_with_walls](images/farmland_with_walls_gazebo.jpg)
 
 ## Prerequisites
 
@@ -23,6 +23,12 @@
 catkin_make
 source devel/setup.bash
 roslaunch farmland_simulator husky_farmland.launch
+```
+
+- Run the mapping server
+
+```
+roslaunch farmland_mapping octomap_mapping.launch
 ```
 
 - Move the robot by, for example,
