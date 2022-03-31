@@ -11,8 +11,8 @@ Ni 1.450000
 d 1.000000
 illum 1
 map_Bump /1
-map_Kd /home/yukun/Downloads/3d_models/lemon_tree/Cap_02.tga
-map_d /home/yukun/Downloads/3d_models/lemon_tree/Cap_02.tga
+map_Kd Cap_02.tga
+map_d Cap_02.tga
 
 newmtl LemonTreeBark
 Ns 0.000000
@@ -24,8 +24,8 @@ Ni 1.450000
 d 1.000000
 illum 1
 map_Bump /1
-map_Kd /home/yukun/Downloads/3d_models/lemon_tree/LemonTreeBark.tga
-map_d /home/yukun/Downloads/3d_models/lemon_tree/LemonTreeBark.tga
+map_Kd LemonTreeBark.tga
+map_d LemonTreeBark.tga
 
 newmtl LemonTreeFruitSkin
 Ns 7.300003
@@ -37,9 +37,9 @@ Ni 1.450000
 d 1.000000
 illum 2
 map_Bump /1
-map_Kd /home/yukun/Downloads/3d_models/lemon_tree/LemonTreeFruitSkin.tga
-map_Ks /home/yukun/Downloads/3d_models/lemon_tree/LemonTreeFruitSkin_Spec.tga
-map_d /home/yukun/Downloads/3d_models/lemon_tree/LemonTreeFruitSkin.tga
+map_Kd LemonTreeFruitSkin.tga
+map_Ks LemonTreeFruitSkin_Spec.tga
+map_d LemonTreeFruitSkin.tga
 
 newmtl LemonTreeLeaf
 Ns 45.100010
@@ -51,6 +51,6 @@ Ni 1.450000
 d 1.000000
 illum 2
 map_Bump /1
-map_Kd /home/yukun/Downloads/3d_models/lemon_tree/LemonTreeLeaf.tga
-map_Ks /home/yukun/Downloads/3d_models/lemon_tree/LemonTreeLeaf_Spec.tga
-map_d /home/yukun/Downloads/3d_models/lemon_tree/LemonTreeLeaf.tga
+map_Kd LemonTreeLeaf.tga
+map_Ks LemonTreeLeaf_Spec.tga
+map_d LemonTreeLeaf.tga

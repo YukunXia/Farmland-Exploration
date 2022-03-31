@@ -10,4 +10,4 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.500000
 d 1.000000
 illum 1
-map_Kd /home/yukun/Downloads/3d_models/10439_Corn_Field_v1_L3.123c80b91965-ab50-4dd0-8508-3847dcd0c84e/10439_Corn_Field_v1_Diffuse.jpg
+map_Kd 10439_Corn_Field_v1_Diffuse.jpg
