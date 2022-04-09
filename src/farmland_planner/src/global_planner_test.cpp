@@ -6,7 +6,7 @@
 geometry_msgs::PoseStamped ArgToPoseStamped(float x, float y) {
     geometry_msgs::PoseStamped pose_stamped;
     pose_stamped.header.seq = 0;
-    pose_stamped.header.frame_id = "map";
+    pose_stamped.header.frame_id = "world";
     pose_stamped.pose.position.x = x;
     pose_stamped.pose.position.y = y;
     // pose_stamped.pose.position.z = 0;

@@ -153,6 +153,11 @@ include_directories(
 #   ${catkin_LIBRARIES}
 # )
 
+add_executable(global_${PROJECT_NAME}_test src/global_planner_test.cpp)
+target_link_libraries(global_${PROJECT_NAME}_test
+  ${catkin_LIBRARIES}
+)
+
 #############
 ## Install ##
 #############

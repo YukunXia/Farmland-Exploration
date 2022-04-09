@@ -17,7 +17,7 @@ update_frequency: 10.0
 publish_frequency: 10.0 # TODO: tune the frequencies
 always_send_full_costmap: true
 
-static_map: true
+static_map: false
 rolling_window: false # global setting => false
 
 # Should be overwritten by the static map
