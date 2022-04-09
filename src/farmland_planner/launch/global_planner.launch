@@ -1,5 +1,5 @@
 <launch>
-    <node name="static_tf0" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 /map /base_link 100"/>
+    <!-- <node name="static_tf0" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 /world /base_link 100"/> -->
     
     <!-- Run the costmap node -->
     <!-- <node name="costmap_node" pkg="costmap_2d" type="costmap_2d_node" >
@@ -9,7 +9,7 @@
     <!-- We don't need the costmap node, since it's included in the global planner -->
 
     <node pkg="global_planner" type="planner" name="planner">
-        <rosparam file="$(find planner)/launch/global_planner.yaml" command="load" ns="costmap" />
+        <rosparam file="$(find farmland_planner)/launch/global_planner.yaml" command="load" ns="costmap" />
     </node> 
     <!-- https://answers.ros.org/question/304965/launch-global_planner-without-move_base/ -->
 
