@@ -15,18 +15,20 @@ constexpr double MAX_AX = 0.5;
 constexpr double MAX_AYAW = M_PI * 1.0 / 9.0;
 
 ros::Subscriber gazebo_states_sub;
+ros::Publisher robot_curr_state_pub;
 geometry_msgs::TransformStamped robot_odometry_tf;
-gazebo_msgs::ModelState robot_state;
+gazebo_msgs::ModelState robot_target_state;
+gazebo_msgs::ModelState robot_curr_state;
 double robot_odometry_tf_last_time = -1.0;
 bool robot_state_inited = false;
 int robot_state_index = -1;
 std::string robot_name;
 
-ros::Publisher robot_state_pub;
+ros::Publisher robot_target_state_pub;
 ros::Subscriber robot_cmdvel_sub;
 geometry_msgs::Twist robot_cmdvel;
 double robot_cmdvel_last_time = -1.0;
-// double robot_state_pub_last_time = -1.0;
+// double robot_target_state_pub_last_time = -1.0;
 bool robot_cmdvel_inited = false;
 constexpr double CMDVEL_TIMEOUT = 0.1;
 
@@ -48,9 +50,9 @@ void gazeboStatesCallback(const gazebo_msgs::ModelStatesConstPtr msg) {
     }
 
     if (robot_state_index >= 0) {
-      robot_state.model_name = robot_name;
-      robot_state.pose = msg->pose.at(robot_state_index);
-      robot_state.reference_frame = "world";
+      robot_target_state.model_name = robot_name;
+      robot_target_state.pose = msg->pose.at(robot_state_index);
+      robot_target_state.reference_frame = "world";
       robot_state_inited = true;
     }
   }
@@ -71,6 +73,12 @@ void gazeboStatesCallback(const gazebo_msgs::ModelStatesConstPtr msg) {
     robot_odometry_tf.transform.translation.z =
         msg->pose.at(robot_state_index).position.z;
     br.sendTransform(robot_odometry_tf);
+
+    robot_curr_state.model_name = robot_name;
+    robot_curr_state.pose = msg->pose.at(robot_state_index);
+    robot_curr_state.reference_frame = "world";
+    robot_curr_state.twist = msg->twist.at(robot_state_index);
+    robot_curr_state_pub.publish(robot_curr_state);
 
     robot_odometry_tf_last_time = curr_time.toSec();
   }
@@ -109,15 +117,15 @@ void pubRobotState() {
 
   // use the last pose read from gazebo to estimate the current yaw
   tf::Quaternion q(
-      robot_state.pose.orientation.x, robot_state.pose.orientation.y,
-      robot_state.pose.orientation.z, robot_state.pose.orientation.w);
+      robot_target_state.pose.orientation.x, robot_target_state.pose.orientation.y,
+      robot_target_state.pose.orientation.z, robot_target_state.pose.orientation.w);
   const tf::Matrix3x3 m(q);
   double roll, pitch, yaw;
   m.getRPY(roll, pitch, yaw);
 
   // rotate the robot velocity to global velodicy, and accelerate v_x
-  const double curr_vx = std::sqrt(std::pow(robot_state.twist.linear.x, 2) +
-                                   std::pow(robot_state.twist.linear.y, 2));
+  const double curr_vx = std::sqrt(std::pow(robot_target_state.twist.linear.x, 2) +
+                                   std::pow(robot_target_state.twist.linear.y, 2));
   const bool increase_vx = target_vx > curr_vx;
   double next_vx = curr_vx + (increase_vx ? 1.0 : -1.0) * MAX_AX * DELTA_T;
   if (increase_vx) {
@@ -126,14 +134,14 @@ void pubRobotState() {
     next_vx = std::max(next_vx, target_vx);
   }
   next_vx = std::max(-MAX_VX, std::min(MAX_VX, next_vx));
-  robot_state.twist.linear.x = next_vx * std::cos(yaw);
-  robot_state.twist.linear.y = next_vx * std::sin(yaw);
-  robot_state.pose.position.x += robot_state.twist.linear.x * real_delta_t;
-  robot_state.pose.position.y += robot_state.twist.linear.y * real_delta_t;
+  robot_target_state.twist.linear.x = next_vx * std::cos(yaw);
+  robot_target_state.twist.linear.y = next_vx * std::sin(yaw);
+  robot_target_state.pose.position.x += robot_target_state.twist.linear.x * real_delta_t;
+  robot_target_state.pose.position.y += robot_target_state.twist.linear.y * real_delta_t;
 
   // accelerate v_yaw
-  const bool increase_vyaw = target_vyaw > robot_state.twist.angular.z;
-  double next_vyaw = robot_state.twist.angular.z +
+  const bool increase_vyaw = target_vyaw > robot_target_state.twist.angular.z;
+  double next_vyaw = robot_target_state.twist.angular.z +
                      (increase_vyaw ? 1.0 : -1.0) * MAX_AYAW * real_delta_t;
   if (increase_vyaw) {
     next_vyaw = std::min(next_vyaw, target_vyaw);
@@ -141,23 +149,23 @@ void pubRobotState() {
     next_vyaw = std::max(next_vyaw, target_vyaw);
   }
   next_vyaw = std::max(-MAX_VYAW, std::min(MAX_VYAW, next_vyaw));
-  robot_state.twist.angular.z = next_vyaw;
+  robot_target_state.twist.angular.z = next_vyaw;
   double next_yaw = yaw + next_vyaw * real_delta_t;
   q.setRPY(roll, pitch, next_yaw);
-  robot_state.pose.orientation.x = q.x();
-  robot_state.pose.orientation.y = q.y();
-  robot_state.pose.orientation.z = q.z();
-  robot_state.pose.orientation.w = q.w();
+  robot_target_state.pose.orientation.x = q.x();
+  robot_target_state.pose.orientation.y = q.y();
+  robot_target_state.pose.orientation.z = q.z();
+  robot_target_state.pose.orientation.w = q.w();
 
   // assume terrian is flat
-  robot_state.twist.angular.x = 0.0;
-  robot_state.twist.angular.y = 0.0;
-  robot_state.twist.linear.z = 0.0;
+  robot_target_state.twist.angular.x = 0.0;
+  robot_target_state.twist.angular.y = 0.0;
+  robot_target_state.twist.linear.z = 0.0;
 
   // finally, publish
-  robot_state_pub.publish(robot_state);
+  robot_target_state_pub.publish(robot_target_state);
   // curr_time = ros::Time::now();
-  // robot_state_pub_last_time = curr_time.toSec();
+  // robot_target_state_pub_last_time = curr_time.toSec();
 }
 
 /*
@@ -170,8 +178,10 @@ int main(int argc, char **argv) {
 
   gazebo_states_sub =
       nh.subscribe("/gazebo/model_states", FREQ, gazeboStatesCallback);
-  robot_state_pub =
+  robot_target_state_pub =
       nh.advertise<gazebo_msgs::ModelState>("/gazebo/set_model_state", 100);
+  robot_curr_state_pub =
+      nh.advertise<gazebo_msgs::ModelState>("/husky_curr_state", 100);
   robot_cmdvel_sub = nh.subscribe("/differential_drive_control/cmd_vel", FREQ,
                                   robotCmdvelCallback);
 

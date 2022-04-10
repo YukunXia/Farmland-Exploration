@@ -1,0 +1,8 @@
+#goal definition
+nav_msgs/Path path
+---
+#result definition
+bool success
+---
+#feedback
+float32 completion_percent
