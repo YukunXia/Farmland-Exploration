@@ -100,12 +100,19 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
       robot_namespace:=$(arg robot_namespace)
     " /> -->
 
+    <!-- Robot with velodyne -->
     <param name="robot_description" command="
       $(find xacro)/xacro '$(find farmland_simulator)/urdf/husky.urdf.xacro'
       laser_3d_enabled:='true' robot_namespace:=$(arg robot_namespace) 
       organize_cloud:=$(arg organize_cloud) gpu:=$(arg gpu)
       point_cloud_topic:=$(arg point_cloud_topic)
     " />
+
+    <!-- Robot without velodyne -->
+    <!-- <param name="robot_description" command="
+      $(find xacro)/xacro '$(find farmland_simulator)/urdf/husky.urdf.xacro'
+      laser_3d_enabled:='false' robot_namespace:=$(arg robot_namespace) 
+    " /> -->
 
 
     <!-- Spawn robot in gazebo -->

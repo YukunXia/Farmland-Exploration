@@ -46,6 +46,4 @@
 
         <remap from="/cloud_in" to="/points" />
     </node>
-
-    <node name="farmland_mapping_node" pkg="farmland_mapping" type="farmland_mapping_node" output="screen" />
 </launch>

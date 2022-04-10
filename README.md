@@ -10,6 +10,8 @@
 - Install PCL
     - https://pointclouds.org/downloads/
     - `sudo apt install libpcl-dev`
+- Install velodyne-simulator
+    - `sudo apt install ros-noetic-velodyne-simulator`
 - Install octomap packages
     - http://wiki.ros.org/octomap_mapping?distro=noetic
     - `sudo apt-get install ros-noetic-octomap ros-noetic-octomap-mapping`
@@ -52,3 +54,5 @@ angular:
     * farmland_with_walls_simplified.world
     * cylinder_world.world
     * cylinder_world_simplified.world
+
+* The official Husky document: https://www.clearpathrobotics.com/assets/guides/kinetic/husky/HuskyFrontiers.html#instructions
