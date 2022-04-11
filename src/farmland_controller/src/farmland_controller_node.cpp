@@ -1,13 +1,15 @@
 #include <cmath>
 
+#include <ros/ros.h>
+#include <tf/transform_datatypes.h>
+
 #include <gazebo_msgs/ModelState.h>
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Twist.h>
+
 #include <nav_msgs/GetPlan.h>
 #include <nav_msgs/Path.h>
-#include <ros/ros.h>
-#include <tf/transform_datatypes.h>
 
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/server/simple_action_server.h>
@@ -20,6 +22,7 @@
 #define NODE_NAME "pure_pursuit_node" // note: this should be same as file name
 #define SIMULATION_ROBOT_NAME "robot" // name of the robot in gazebo
 #define MAIN_LOOP_RATE 100            // loop rate for main loop
+#define PURE_PURSUIT_LOOP_RATE 100
 
 typedef actionlib::SimpleActionServer<farmland_controller::pure_pursuitAction>
     Server;
@@ -29,8 +32,10 @@ gazebo_msgs::ModelState robot_state; // current state of the robot
 bool robot_state_is_initialized =
     false; // set to true if robot state received, else false
 ros::ServiceClient global_path_client; // service client to call global planner
+ros::Publisher pub_cmd_vel;
 
 /** --------- hyper parameters ---------------*/
+float desired_speed;       // desried speed of the robot
 float goal_dist_epsilon; // the distance which the robot needs to get to the
                            // goal point
 float max_ld;              // max lookahead distance
@@ -85,7 +90,7 @@ float getLookAheadDistance(float robot_speed, float min_ld, float max_ld,
  * TODO: Implement function stub
  */
 geometry_msgs::Point getTargetPoint(geometry_msgs::Pose &robot_pose,
-                                    nav_msgs::Path path, float ld) {
+                                    const nav_msgs::Path &path, float ld) {
   geometry_msgs::Point point;
   return point;
 }
@@ -110,7 +115,10 @@ float getTurningRadius(float dist_to_target_point, float heading_delta) {
  * Gets the twist (translational velocity and angular velocity) from a turning
  * radius
  */
-float getTwist(float radius, float target_speed) { return 0; }
+geometry_msgs::Twist getTwist(float radius, float target_speed) {
+  geometry_msgs::Twist twist;
+  return twist;
+}
 
 /** ---------------- Callbacks ------------- */
 /**
@@ -127,23 +135,51 @@ void execute(const farmland_controller::pure_pursuitGoalConstPtr goal, Server *a
              ros::NodeHandle *nh) {
   farmland_controller::pure_pursuitResult result;
   farmland_controller::pure_pursuitFeedback feedback;
+  ros::Rate loop_rate(PURE_PURSUIT_LOOP_RATE);
 
   // Goal point is end of path
   size_t num_poses = goal->path.poses.size();
   geometry_msgs::Point goal_point = goal->path.poses[num_poses-1].pose.position;
+  float goal_dist; // Distance from robot to goal point
+  bool reached_goal = false;
 
-  while(euclideanDistance2d(robot_state.pose.position,goal_point) > goal_dist_epsilon) {
+  float robot_speed; // Translational speed of the robot
+  float ld; // The lookahead distance
+  geometry_msgs::Point tp; // The lookahead point
+  float alpha; // Delta between current robot heading and direction of target point
+  float target_dist; // Distance to target point
+  float turning_radius; // Turning radius the robot needs to get to tp
+  geometry_msgs::Twist cmd_vel; // Command sent to robot
+
+  while(true) {
     if (as_ptr->isPreemptRequested() || !ros::ok()) {
       ROS_WARN("pre empted");
       result.success = false;
       break;
     }
-    // TODO: remove break
-    break;
+
+    robot_speed = robot_state.twist.linear.x;
+    ld = getLookAheadDistance(robot_speed, min_ld, max_ld, k_dd);
+    tp = getTargetPoint(robot_state.pose,goal->path,ld);
+    alpha = getHeadingDelta(robot_state.pose,tp);
+    target_dist = euclideanDistance2d(robot_state.pose.position, tp);
+    turning_radius = getTurningRadius(target_dist, alpha);
+    cmd_vel = getTwist(turning_radius, desired_speed);
+
+    pub_cmd_vel.publish(cmd_vel);
+
+    goal_dist = euclideanDistance2d(robot_state.pose.position,goal_point);
+    reached_goal = goal_dist < goal_dist_epsilon;
+
+    if (reached_goal) {
+      result.success = true;
+      break;
+    }
+
+    loop_rate.sleep();
   }
 
   if (result.success) {
-    ROS_INFO("PP Node: Got to goal");
     as_ptr->setSucceeded(result);
   } else {
     as_ptr->setPreempted(result);
@@ -158,8 +194,12 @@ int main(int argc, char **argv) {
   global_path_client =
       nh.serviceClient<nav_msgs::GetPlan>("/planner/planner/make_plan");
 
+  // /differential_drive_control/cmd_vel
   ros::Subscriber sub_model_states =
-      nh.subscribe("/husky_cur_state", 1, modelStateCallback);
+      nh.subscribe("/husky_curr_state", 1, modelStateCallback);
+
+  pub_cmd_vel =
+      nh.advertise<geometry_msgs::Twist>("/differential_drive_control/cmd_vel",5);
 
   Server server(nh, "pure_pursuit_server",
                 boost::bind(&execute, _1, &server, &nh), false);
