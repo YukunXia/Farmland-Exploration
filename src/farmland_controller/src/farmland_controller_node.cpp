@@ -65,13 +65,13 @@ float euclideanDistance2d(geometry_msgs::Point a, geometry_msgs::Point b) {
 /**
  * Extract yaw from a pose
  */
-float yawFromPose(geometry_msgs::Pose::ConstPtr &pose) {
+float yawFromPose(geometry_msgs::Pose &pose) {
   static tf::Quaternion quaternion;
   static tf::Matrix3x3 rot_matrix;
   static double roll, pitch, yaw;
 
   // Get robot state
-  tf::quaternionMsgToTF(pose->orientation, quaternion);
+  tf::quaternionMsgToTF(pose.orientation, quaternion);
   rot_matrix.setRotation(quaternion);
   rot_matrix.getRPY(roll, pitch, yaw);
   return yaw;
@@ -82,7 +82,10 @@ float yawFromPose(geometry_msgs::Pose::ConstPtr &pose) {
  */
 float getLookAheadDistance(float robot_speed, float min_ld, float max_ld,
                            float k_dd) {
-  return 0;
+  float ld = robot_speed * k_dd;
+  if (ld < min_ld) ld = min_ld;
+  if (ld > max_ld) ld = max_ld;
+  return ld;
 }
 
 /**
@@ -101,7 +104,12 @@ geometry_msgs::Point getTargetPoint(geometry_msgs::Pose &robot_pose,
  */
 float getHeadingDelta(geometry_msgs::Pose &robot_pose,
                       geometry_msgs::Point target_point) {
-  return 0;
+  float yaw = yawFromPose(robot_pose);
+  float delta_y = robot_pose.position.y - target_point.y;
+  float delta_x = robot_pose.position.x - target_point.x;
+  float angleFromRobotToTarget = atan2(delta_y,delta_x);
+  float heading_delta = angleFromRobotToTarget - yaw;
+  return heading_delta;
 }
 
 /**

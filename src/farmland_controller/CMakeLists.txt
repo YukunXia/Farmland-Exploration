@@ -108,8 +108,8 @@ generate_messages(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
- LIBRARIES farmland_controller
+ INCLUDE_DIRS include
+ # LIBRARIES farmland_controller
  CATKIN_DEPENDS gazebo_ros geometry_msgs nav_msgs roscpp sensor_msgs std_msgs tf
  DEPENDS system_lib
 )
@@ -121,13 +121,19 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
-  ${catkin_INCLUDE_DIRS}
+  include ${catkin_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
-# add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/farmland_controller.cpp
+add_library(pure_pursuit
+  src/pure_pursuit.cpp
+)
+set_target_properties(pure_pursuit
+  PROPERTIES PUBLIC_HEADER include/${PROJECT_NAME}/pure_pursuit.h
+)
+
+# target_link_libraries(pure_pursuit,
+#   ${catkin_LIBRARIES}
 # )
 
 ## Add cmake target dependencies of the library
