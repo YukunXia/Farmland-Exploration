@@ -9,7 +9,9 @@
 ros::ServiceClient frontier_detection_client;
 ros::ServiceClient global_planner_client;
 nav_msgs::GetPlan global_planner_srv;
-ros::Publisher global_path_pub;
+
+std::vector<geometry_msgs::PoseStamped> goal_poses;
+int cur_goal = 0;
 
 ros::Subscriber robot_state_sub;
 geometry_msgs::PoseStamped curr_pose_stamped;
@@ -28,17 +30,35 @@ void robotStateCallback(const gazebo_msgs::ModelStateConstPtr robot_state_msg) {
   curr_pose_stamped.header.seq = 0;
   curr_pose_stamped.header.frame_id = "world";
   curr_pose_stamped.pose = robot_state_msg->pose;
+
+  ROS_INFO_THROTTLE(1,"robot vlinear = %.4f,  vyaw = %.4f",
+           std::sqrt(std::pow(robot_state_msg->twist.linear.x, 2) +
+                     std::pow(robot_state_msg->twist.linear.y, 2)),
+           robot_state_msg->twist.angular.z);
 }
 
-geometry_msgs::PoseStamped getGoalPose() {
+void setGoalPoses() {
   geometry_msgs::PoseStamped goal_pose_stamped;
-  // dummy fixed goal, i.e. the origin
-  goal_pose_stamped.header.stamp = ros::Time::now();
+  // goal_pose_stamped.header.stamp = ros::Time::now();
+  goal_pose_stamped.header.seq = 0;
+  goal_pose_stamped.header.frame_id = "world";
+  goal_pose_stamped.pose.position.x = 8.0;
+  goal_pose_stamped.pose.position.y = 1.0;
+  goal_poses.push_back(goal_pose_stamped);
+
+  // goal_pose_stamped.header.stamp = ros::Time::now();
   goal_pose_stamped.header.seq = 0;
   goal_pose_stamped.header.frame_id = "world";
   goal_pose_stamped.pose.position.x = 0.0;
   goal_pose_stamped.pose.position.y = 0.0;
-  return goal_pose_stamped;
+  goal_poses.push_back(goal_pose_stamped);
+}
+geometry_msgs::PoseStamped getGoalPose() {
+  if (cur_goal >= goal_poses.size()) {
+    cur_goal = goal_poses.size() - 1;
+  }
+  goal_poses[cur_goal].header.stamp = ros::Time::now();
+  return goal_poses[cur_goal];
 }
 
 std::pair<nav_msgs::Path, bool>
@@ -87,16 +107,22 @@ int main(int argc, char **argv) {
   global_planner_client =
       nh.serviceClient<nav_msgs::GetPlan>("/planner/planner/make_plan");
   robot_state_sub = nh.subscribe("/husky_curr_state", 100, robotStateCallback);
-  global_path_pub = nh.advertise<nav_msgs::Path>("/global_path", 100);
   ac_ptr_PP = std::make_shared<PPClient>(action_server_name, true);
   checkPurePuresuitReadiness();
+  setGoalPoses();
 
   ros::Rate loop_rate(100);
-  ROS_INFO("In farmland_planner_node: looping starts\n");
+  ROS_INFO("Planner Node: looping starts\n");
   while (ros::ok()) {
-    ros::spinOnce();
+    bool PP_has_started = false;
 
-    if (!ac_ptr_PP_is_active() && robot_state_is_initialized) {
+    if (!robot_state_is_initialized) {
+        ros::spinOnce();
+        loop_rate.sleep();
+        continue;
+    }
+
+    if (!ac_ptr_PP_is_active()) {
       const geometry_msgs::PoseStamped goal_pose = getGoalPose();
 
       nav_msgs::Path path;
@@ -105,38 +131,39 @@ int main(int argc, char **argv) {
           getGlobalPlan(curr_pose_stamped, goal_pose);
 
       if (!global_plan_success) {
+        ros::spinOnce();
         loop_rate.sleep();
         continue;
       }
 
+      ROS_INFO("Planner Node: Sending goal %d to Pure Pursuit",cur_goal);
       farmland_controller::pure_pursuitGoal goal;
       goal.path = path;
       ac_ptr_PP->sendGoal(goal);
+      PP_has_started = false;
     }
-    /*
-        if (robot_state_is_initialized && pp not started or finished) {
-          getGlobalPlan(p0, p1);
-          // global_path_pub.publish(global_planner_srv.response.plan);
-          get new frontier;
-          call pp action;
-        }
-        if (every is explored) terminate;
-    */
-    /*
 
+    // Wait for PP to finish
+    while (ac_ptr_PP_is_active() || !PP_has_started) {
+      if (ac_ptr_PP_is_active()) {
+        PP_has_started = true;
+      }
+      ros::spinOnce();
+      loop_rate.sleep();
+    }
 
-        --- usefule ac fns ---
+    ROS_INFO("Planner Node: Pure pursuit finished");
+    if (ac_ptr_PP->getResult()->success) {
+      ROS_INFO("Planner Node: Pure pursuit success");
+      cur_goal++;
+    }
 
-    ac_ptr_LA->getState() ==
-               actionlib::SimpleClientGoalState::LOST
+    if (cur_goal >= goal_poses.size()) {
+      ROS_INFO("Planner Node: Finished all goals");
+      break;
+    }
 
-    obstacle_motion::forklift_playerGoal goal =
-    tasks[task_index].forkliftTaskToGoal(); ac_ptr->sendGoal(goal);
-
-            ac_ptr->cancelGoal();
-            ac_ptr_LA->getResult()
-        */
-
+    ros::spinOnce();
     loop_rate.sleep();
   }
 

@@ -21,10 +21,11 @@
 #include <farmland_controller/pure_pursuit.h>
 
 /** ----------- defines --------------------- */
-#define NODE_NAME "farmland_controller_node" // note: this should be same as file name
+#define NODE_NAME                                                              \
+  "farmland_controller_node"          // note: this should be same as file name
 #define SIMULATION_ROBOT_NAME "husky" // name of the robot in gazebo
 #define ACTION_SERVER_NAME "pure_pursuit_server"
-#define MAIN_LOOP_RATE 100            // loop rate for main loop
+#define MAIN_LOOP_RATE 100 // loop rate for main loop
 #define PURE_PURSUIT_LOOP_RATE 100
 
 typedef actionlib::SimpleActionServer<farmland_controller::pure_pursuitAction>
@@ -37,14 +38,13 @@ bool robot_state_is_initialized =
 ros::Publisher pub_cmd_vel;
 
 /** --------- hyper parameters ---------------*/
-float desired_speed = 1;       // desried speed of the robot
-float goal_dist_epsilon = 0.25; // the distance which the robot needs to get to the
-                           // goal point
-float max_ld = 5;              // max lookahead distance
-float min_ld = 0.5;              // Min lookahead distance
-float k_dd = 2; // Lookahead speed mulitplier. 
-            // eg. ld = clip(k_dd * speed, min_ld, max_ld)
-
+float desired_speed = 1;        // desried speed of the robot
+float goal_dist_epsilon = 0.25; // the distance which the robot needs to get to
+                                // the goal point
+float max_ld = 3;   // max lookahead distance
+float min_ld = 0.5; // Min lookahead distance
+float k_dd = 0.75;  // Lookahead speed mulitplier.
+                    // eg. ld = clip(k_dd * speed, min_ld, max_ld)
 
 /** ---------------- Callbacks ------------- */
 /**
@@ -57,8 +57,8 @@ void modelStateCallback(const gazebo_msgs::ModelState::ConstPtr &msg) {
   robot_state_is_initialized = true;
 }
 
-void execute(const farmland_controller::pure_pursuitGoalConstPtr goal, Server *as_ptr,
-             ros::NodeHandle *nh) {
+void execute(const farmland_controller::pure_pursuitGoalConstPtr goal,
+             Server *as_ptr, ros::NodeHandle *nh) {
   farmland_controller::pure_pursuitResult result;
   farmland_controller::pure_pursuitFeedback feedback;
   farmland_controller::PurePursuit pp;
@@ -73,10 +73,11 @@ void execute(const farmland_controller::pure_pursuitGoalConstPtr goal, Server *a
   geometry_msgs::Point goal_point = goal->path.poses.back().pose.position;
   bool reached_goal = false;
   geometry_msgs::Twist cmd_vel;
+  ROS_INFO("Controller: Beginning execution");
 
-  while(true) {
+  while (true) {
     if (as_ptr->isPreemptRequested() || !ros::ok()) {
-      ROS_WARN("pre empted");
+      ROS_WARN("Controller: pre empted");
       result.success = false;
       break;
     }
@@ -94,8 +95,10 @@ void execute(const farmland_controller::pure_pursuitGoalConstPtr goal, Server *a
   }
 
   if (result.success) {
+    ROS_INFO("Controller: Succeeded");
     as_ptr->setSucceeded(result);
   } else {
+    ROS_WARN("Controller: Failed");
     as_ptr->setPreempted(result);
   }
 }
@@ -109,11 +112,11 @@ int main(int argc, char **argv) {
   ros::Subscriber sub_model_states =
       nh.subscribe("/husky_curr_state", 1, modelStateCallback);
 
-  pub_cmd_vel =
-      nh.advertise<geometry_msgs::Twist>("/differential_drive_control/cmd_vel",5);
+  pub_cmd_vel = nh.advertise<geometry_msgs::Twist>(
+      "/husky_velocity_controller/cmd_vel", 5);
 
-  Server server(nh, ACTION_SERVER_NAME,
-                boost::bind(&execute, _1, &server, &nh), false);
+  Server server(nh, ACTION_SERVER_NAME, boost::bind(&execute, _1, &server, &nh),
+                false);
   server.start();
 
   while (ros::ok()) {

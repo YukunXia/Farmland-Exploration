@@ -155,8 +155,8 @@ add_executable(${PROJECT_NAME}_node src/farmland_controller_node.cpp)
 ## target back to the shorter version for ease of user use
 ## e.g. "rosrun someones_pkg node" instead of "rosrun someones_pkg someones_pkg_node"
 
-# TODO: uncomment below
-set_target_properties(${PROJECT_NAME}_node PROPERTIES OUTPUT_NAME node PREFIX "")
+# comment below
+# set_target_properties(${PROJECT_NAME}_node PROPERTIES OUTPUT_NAME node PREFIX "")
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above

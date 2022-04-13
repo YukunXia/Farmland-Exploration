@@ -54,4 +54,10 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
   
   <node name="differential_drive_husky" pkg="farmland_simulator" type="differential_drive_husky" output="screen" />
 
+  <include file="$(find farmland_mapping)/launch/octomap_mapping.launch" />
+
+  <include file="$(find farmland_planner)/launch/global_planner.launch" />
+
+  <node name="farmland_controller_node" pkg="farmland_controller" type="farmland_controller_node" output="screen" />
+
 </launch>
