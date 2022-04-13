@@ -21,6 +21,24 @@ geometry_msgs::Point get_point(float x, float y) {
   return p;
 }
 
+geometry_msgs::Quaternion quatFromYaw(float yaw) {
+  geometry_msgs::Quaternion msg_quaternion;
+  static tf::Quaternion tf_quaternion;
+  static tf::Matrix3x3 rot_matrix;
+  rot_matrix.setRPY(0,0,yaw);
+  rot_matrix.getRotation(tf_quaternion);
+  tf::quaternionTFToMsg(tf_quaternion,msg_quaternion);
+  return msg_quaternion;
+}
+
+TEST(PurePursuitTestSuite, yawFromPose) {
+  geometry_msgs::Pose p;
+  farmland_controller::PurePursuit pp;
+  p.orientation = quatFromYaw(2);
+  float yaw = pp.yawFromPose(p);
+  EXPECT_FLOAT_EQ(yaw,2);
+}
+
 TEST(PurePursuitTestSuite, euclideanDistance2d)
 {
   farmland_controller::PurePursuit pp;

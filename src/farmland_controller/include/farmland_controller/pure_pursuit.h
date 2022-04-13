@@ -60,14 +60,12 @@ namespace farmland_controller
 
     /**
      * Gets a lookahead point
-     * TODO: Implement function stub
      */
     geometry_msgs::Point getTargetPoint(geometry_msgs::Pose &robot_pose,
                                         const nav_msgs::Path &path, float ld);
 
     /**
      * Gets the heading delta needed to have the robot face the target point
-     * TODO: Implement function stub
      */
     float getHeadingDelta(geometry_msgs::Pose &robot_pose,
                           geometry_msgs::Point target_point);
