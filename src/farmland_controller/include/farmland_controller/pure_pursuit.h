@@ -56,8 +56,7 @@ namespace farmland_controller
     /**
      * Gets the lookahead distance for the robot
      */
-    float getLookAheadDistance(float robot_speed, float min_ld, float max_ld,
-                               float k_dd);
+    float getLookAheadDistance(float robot_speed);
 
     /**
      * Gets a lookahead point
