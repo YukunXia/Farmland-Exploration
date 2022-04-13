@@ -109,7 +109,7 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
  INCLUDE_DIRS include
- # LIBRARIES farmland_controller
+ LIBRARIES farmland_controller
  CATKIN_DEPENDS gazebo_ros geometry_msgs nav_msgs roscpp sensor_msgs std_msgs tf
  DEPENDS system_lib
 )
@@ -212,6 +212,13 @@ target_link_libraries(${PROJECT_NAME}_node
 #############
 
 ## Add gtest based cpp test target and link libraries
+catkin_add_gtest(pure_pursuit_test test/pure_pursuit_test.cpp)
+if(TARGET pure_pursuit_test)
+  # target_link_libraries(pure_pursuit_test pure_pursuit ${PROJECT_NAME})
+  add_dependencies(pure_pursuit_test pure_pursuit)
+  target_link_libraries(pure_pursuit_test pure_pursuit ${catkin_LIBRARIES})
+endif()
+
 # catkin_add_gtest(${PROJECT_NAME}-test test/test_farmland_controller.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})

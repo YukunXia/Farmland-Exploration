@@ -46,7 +46,6 @@ namespace farmland_controller
     std::pair<geometry_msgs::Twist,bool> getCommand(gazebo_msgs::ModelState &robot_state,
                                   const nav_msgs::Path &path);
 
-  private:
     float euclideanDistance2d(geometry_msgs::Point a, geometry_msgs::Point b);
 
     /**

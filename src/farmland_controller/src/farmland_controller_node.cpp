@@ -151,13 +151,6 @@ void execute(const farmland_controller::pure_pursuitGoalConstPtr goal, Server *a
   float goal_dist; // Distance from robot to goal point
   bool reached_goal = false;
 
-  float robot_speed; // Translational speed of the robot
-  float ld; // The lookahead distance
-  geometry_msgs::Point tp; // The lookahead point
-  float alpha; // Delta between current robot heading and direction of target point
-  float target_dist; // Distance to target point
-  float turning_radius; // Turning radius the robot needs to get to tp
-  geometry_msgs::Twist cmd_vel; // Command sent to robot
 
   while(true) {
     if (as_ptr->isPreemptRequested() || !ros::ok()) {
@@ -165,6 +158,14 @@ void execute(const farmland_controller::pure_pursuitGoalConstPtr goal, Server *a
       result.success = false;
       break;
     }
+    float robot_speed; // Translational speed of the robot
+    float ld; // The lookahead distance
+    geometry_msgs::Point tp; // The lookahead point
+    float alpha; // Delta between current robot heading and direction of target point
+    float target_dist; // Distance to target point
+    float turning_radius; // Turning radius the robot needs to get to tp
+    geometry_msgs::Twist cmd_vel; // Command sent to robot
+
 
     robot_speed = robot_state.twist.linear.x;
     ld = getLookAheadDistance(robot_speed, min_ld, max_ld, k_dd);
