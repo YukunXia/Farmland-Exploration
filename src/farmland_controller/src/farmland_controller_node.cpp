@@ -18,6 +18,8 @@
 #include <farmland_controller/pure_pursuitFeedback.h>
 #include <farmland_controller/pure_pursuitResult.h>
 
+#include <farmland_controller/pure_pursuit.h>
+
 /** ----------- defines --------------------- */
 #define NODE_NAME "pure_pursuit_node" // note: this should be same as file name
 #define SIMULATION_ROBOT_NAME "robot" // name of the robot in gazebo
@@ -43,90 +45,6 @@ float min_ld;              // Min lookahead distance
 float k_dd; // Lookahead speed mulitplier. 
             // eg. ld = clip(k_dd * speed, min_ld, max_ld)
 
-/** -------------- Helper Functions ---------- */
-/**
- * Convert (x,y) to pose stamped.
- */
-geometry_msgs::PoseStamped ArgToPoseStamped(double x, double y) {
-  geometry_msgs::PoseStamped pose_stamped;
-  pose_stamped.header.seq = 0;
-  pose_stamped.header.frame_id = "map";
-  pose_stamped.pose.position.x = x;
-  pose_stamped.pose.position.y = y;
-  // No need to provide orientation, because global doesn't consider that
-
-  return pose_stamped;
-}
-
-float euclideanDistance2d(geometry_msgs::Point a, geometry_msgs::Point b) {
-  return sqrt(pow(a.x-b.x,2)+pow(a.y-b.y,2));
-}
-
-/**
- * Extract yaw from a pose
- */
-float yawFromPose(geometry_msgs::Pose &pose) {
-  static tf::Quaternion quaternion;
-  static tf::Matrix3x3 rot_matrix;
-  static double roll, pitch, yaw;
-
-  // Get robot state
-  tf::quaternionMsgToTF(pose.orientation, quaternion);
-  rot_matrix.setRotation(quaternion);
-  rot_matrix.getRPY(roll, pitch, yaw);
-  return yaw;
-}
-
-/**
- * Gets the lookahead distance for the robot
- */
-float getLookAheadDistance(float robot_speed, float min_ld, float max_ld,
-                           float k_dd) {
-  float ld = robot_speed * k_dd;
-  if (ld < min_ld) ld = min_ld;
-  if (ld > max_ld) ld = max_ld;
-  return ld;
-}
-
-/**
- * Gets a lookahead point
- * TODO: Implement function stub
- */
-geometry_msgs::Point getTargetPoint(geometry_msgs::Pose &robot_pose,
-                                    const nav_msgs::Path &path, float ld) {
-  geometry_msgs::Point point;
-  return point;
-}
-
-/**
- * Gets the heading delta needed to have the robot face the target point
- * TODO: Implement function stub
- */
-float getHeadingDelta(geometry_msgs::Pose &robot_pose,
-                      geometry_msgs::Point target_point) {
-  float yaw = yawFromPose(robot_pose);
-  float delta_y = robot_pose.position.y - target_point.y;
-  float delta_x = robot_pose.position.x - target_point.x;
-  float angleFromRobotToTarget = atan2(delta_y,delta_x);
-  float heading_delta = angleFromRobotToTarget - yaw;
-  return heading_delta;
-}
-
-/**
- * Gets the turning radius needed to reach target point
- */
-float getTurningRadius(float dist_to_target_point, float heading_delta) {
-  return 0;
-}
-
-/**
- * Gets the twist (translational velocity and angular velocity) from a turning
- * radius
- */
-geometry_msgs::Twist getTwist(float radius, float target_speed) {
-  geometry_msgs::Twist twist;
-  return twist;
-}
 
 /** ---------------- Callbacks ------------- */
 /**
@@ -143,14 +61,19 @@ void execute(const farmland_controller::pure_pursuitGoalConstPtr goal, Server *a
              ros::NodeHandle *nh) {
   farmland_controller::pure_pursuitResult result;
   farmland_controller::pure_pursuitFeedback feedback;
+  farmland_controller::PurePursuit pp;
+  pp.desired_speed = desired_speed;
+  pp.k_dd = k_dd;
+  pp.goal_dist_epsilon = goal_dist_epsilon;
+  pp.min_ld = min_ld;
+  pp.max_ld = max_ld;
   ros::Rate loop_rate(PURE_PURSUIT_LOOP_RATE);
 
   // Goal point is end of path
-  size_t num_poses = goal->path.poses.size();
-  geometry_msgs::Point goal_point = goal->path.poses[num_poses-1].pose.position;
+  geometry_msgs::Point goal_point = goal->path.poses.back().pose.position;
   float goal_dist; // Distance from robot to goal point
   bool reached_goal = false;
-
+  geometry_msgs::Twist cmd_vel;
 
   while(true) {
     if (as_ptr->isPreemptRequested() || !ros::ok()) {
@@ -158,27 +81,10 @@ void execute(const farmland_controller::pure_pursuitGoalConstPtr goal, Server *a
       result.success = false;
       break;
     }
-    float robot_speed; // Translational speed of the robot
-    float ld; // The lookahead distance
-    geometry_msgs::Point tp; // The lookahead point
-    float alpha; // Delta between current robot heading and direction of target point
-    float target_dist; // Distance to target point
-    float turning_radius; // Turning radius the robot needs to get to tp
-    geometry_msgs::Twist cmd_vel; // Command sent to robot
 
-
-    robot_speed = robot_state.twist.linear.x;
-    ld = getLookAheadDistance(robot_speed, min_ld, max_ld, k_dd);
-    tp = getTargetPoint(robot_state.pose,goal->path,ld);
-    alpha = getHeadingDelta(robot_state.pose,tp);
-    target_dist = euclideanDistance2d(robot_state.pose.position, tp);
-    turning_radius = getTurningRadius(target_dist, alpha);
-    cmd_vel = getTwist(turning_radius, desired_speed);
+    std::tie(cmd_vel, reached_goal) = pp.getCommand(robot_state, goal->path);
 
     pub_cmd_vel.publish(cmd_vel);
-
-    goal_dist = euclideanDistance2d(robot_state.pose.position,goal_point);
-    reached_goal = goal_dist < goal_dist_epsilon;
 
     if (reached_goal) {
       result.success = true;
