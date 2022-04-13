@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   std_msgs
   tf
+  actionlib_msgs 
 )
 
 ## System dependencies are found with CMake's conventions
@@ -66,8 +67,8 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## Generate actions in the 'action' folder
 add_action_files(
-  FILES
-  pure_pursuit.action
+  DIRECTORY action
+  FILES pure_pursuit.action
 )
 
 ## Generate added messages and services with any dependencies listed here
@@ -75,6 +76,7 @@ generate_messages(
   DEPENDENCIES
   nav_msgs
   std_msgs
+  actionlib_msgs
   # geometry_msgs#   nav_msgs#   sensor_msgs#   std_msgs
 )
 
@@ -109,8 +111,8 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
  INCLUDE_DIRS include
- LIBRARIES farmland_controller
- CATKIN_DEPENDS gazebo_ros geometry_msgs nav_msgs roscpp sensor_msgs std_msgs tf
+ # LIBRARIES farmland_controller
+ CATKIN_DEPENDS actionlib_msgs gazebo_ros geometry_msgs nav_msgs roscpp sensor_msgs std_msgs tf
  DEPENDS system_lib
 )
 

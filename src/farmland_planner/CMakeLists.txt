@@ -14,6 +14,9 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   std_msgs
   tf
+  actionlib
+  actionlib_msgs
+  farmland_controller
 )
 
 ## System dependencies are found with CMake's conventions
@@ -108,7 +111,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES farmland_planner
-#  CATKIN_DEPENDS geometry_msgs nav_msgs roscpp sensor_msgs std_msgs tf
+   CATKIN_DEPENDS farmland_controller actionlib_msgs geometry_msgs nav_msgs roscpp sensor_msgs std_msgs tf
 #  DEPENDS system_lib
 )
 
@@ -119,7 +122,7 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
+  # include
   ${catkin_INCLUDE_DIRS}
 )
 
@@ -136,7 +139,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/farmland_planner_node.cpp)
+add_executable(${PROJECT_NAME}_node src/farmland_planner_node.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -146,17 +149,21 @@ include_directories(
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-# add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(${PROJECT_NAME}_node 
+  ${${PROJECT_NAME}_EXPORTED_TARGETS} 
+  ${farmland_controller_EXPORTED_TARGETS} 
+  ${catkin_EXPORTED_TARGETS}
+)
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(${PROJECT_NAME}_node
-#   ${catkin_LIBRARIES}
-# )
-
-add_executable(global_${PROJECT_NAME}_test src/global_planner_test.cpp)
-target_link_libraries(global_${PROJECT_NAME}_test
+target_link_libraries(${PROJECT_NAME}_node
   ${catkin_LIBRARIES}
 )
+
+# add_executable(global_${PROJECT_NAME}_test src/global_planner_test.cpp)
+# target_link_libraries(global_${PROJECT_NAME}_test
+#   ${catkin_LIBRARIES}
+# )
 
 #############
 ## Install ##

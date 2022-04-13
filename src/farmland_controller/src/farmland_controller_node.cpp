@@ -21,8 +21,9 @@
 #include <farmland_controller/pure_pursuit.h>
 
 /** ----------- defines --------------------- */
-#define NODE_NAME "pure_pursuit_node" // note: this should be same as file name
-#define SIMULATION_ROBOT_NAME "robot" // name of the robot in gazebo
+#define NODE_NAME "farmland_controller_node" // note: this should be same as file name
+#define SIMULATION_ROBOT_NAME "husky" // name of the robot in gazebo
+#define ACTION_SERVER_NAME "pure_pursuit_server"
 #define MAIN_LOOP_RATE 100            // loop rate for main loop
 #define PURE_PURSUIT_LOOP_RATE 100
 
@@ -33,7 +34,6 @@ typedef actionlib::SimpleActionServer<farmland_controller::pure_pursuitAction>
 gazebo_msgs::ModelState robot_state; // current state of the robot
 bool robot_state_is_initialized =
     false; // set to true if robot state received, else false
-ros::ServiceClient global_path_client; // service client to call global planner
 ros::Publisher pub_cmd_vel;
 
 /** --------- hyper parameters ---------------*/
@@ -71,7 +71,6 @@ void execute(const farmland_controller::pure_pursuitGoalConstPtr goal, Server *a
 
   // Goal point is end of path
   geometry_msgs::Point goal_point = goal->path.poses.back().pose.position;
-  float goal_dist; // Distance from robot to goal point
   bool reached_goal = false;
   geometry_msgs::Twist cmd_vel;
 
@@ -84,12 +83,12 @@ void execute(const farmland_controller::pure_pursuitGoalConstPtr goal, Server *a
 
     std::tie(cmd_vel, reached_goal) = pp.getCommand(robot_state, goal->path);
 
-    pub_cmd_vel.publish(cmd_vel);
-
     if (reached_goal) {
       result.success = true;
       break;
     }
+
+    pub_cmd_vel.publish(cmd_vel);
 
     loop_rate.sleep();
   }
@@ -106,9 +105,6 @@ int main(int argc, char **argv) {
   ros::NodeHandle nh;
   ros::Rate main_loop_rate(MAIN_LOOP_RATE);
 
-  global_path_client =
-      nh.serviceClient<nav_msgs::GetPlan>("/planner/planner/make_plan");
-
   // /differential_drive_control/cmd_vel
   ros::Subscriber sub_model_states =
       nh.subscribe("/husky_curr_state", 1, modelStateCallback);
@@ -116,7 +112,7 @@ int main(int argc, char **argv) {
   pub_cmd_vel =
       nh.advertise<geometry_msgs::Twist>("/differential_drive_control/cmd_vel",5);
 
-  Server server(nh, "pure_pursuit_server",
+  Server server(nh, ACTION_SERVER_NAME,
                 boost::bind(&execute, _1, &server, &nh), false);
   server.start();
 
