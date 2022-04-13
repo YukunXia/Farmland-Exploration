@@ -13,8 +13,7 @@ namespace farmland_controller
     float turning_radius;         // Turning radius the robot needs to get to tp
     geometry_msgs::Twist cmd_vel; // Command sent to robot
 
-    size_t num_poses = path.poses.size();
-    geometry_msgs::Point goal_point = path.poses[num_poses - 1].pose.position;
+    geometry_msgs::Point goal_point = path.poses.back().pose.position;
     robot_speed = robot_state.twist.linear.x;
 
     ld = getLookAheadDistance(robot_speed);
@@ -51,6 +50,16 @@ namespace farmland_controller
     return yaw;
   }
 
+geometry_msgs::Quaternion PP::quatFromYaw(float yaw) {
+  geometry_msgs::Quaternion msg_quaternion;
+  static tf::Quaternion tf_quaternion;
+  static tf::Matrix3x3 rot_matrix;
+  rot_matrix.setRPY(0,0,yaw);
+  rot_matrix.getRotation(tf_quaternion);
+  tf::quaternionTFToMsg(tf_quaternion,msg_quaternion);
+  return msg_quaternion;
+}
+
   /**
    * Gets the lookahead distance for the robot
    */
@@ -66,7 +75,6 @@ namespace farmland_controller
 
   /**
    * Gets a lookahead point
-   * TODO: Implement function stub
    */
   geometry_msgs::Point PP::getTargetPoint(geometry_msgs::Pose &robot_pose,
                                           const nav_msgs::Path &path, float ld)
@@ -117,16 +125,20 @@ namespace farmland_controller
 
   /**
    * Gets the heading delta needed to have the robot face the target point
-   * TODO: Implement function stub
+   * ie robot_heading + heading_delta = angle robot needs to face target
    */
   float PP::getHeadingDelta(geometry_msgs::Pose &robot_pose,
                             geometry_msgs::Point target_point)
   {
     float yaw = yawFromPose(robot_pose);
-    float delta_y = robot_pose.position.y - target_point.y;
-    float delta_x = robot_pose.position.x - target_point.x;
+    float delta_y = target_point.y - robot_pose.position.y;
+    float delta_x = target_point.x - robot_pose.position.x;
     float angleFromRobotToTarget = atan2(delta_y, delta_x);
     float heading_delta = angleFromRobotToTarget - yaw;
+
+    // Constrain heading_delta to range [-pi, pi)
+    while (heading_delta < -M_PI) heading_delta += M_2_PI;
+    while (heading_delta >= M_PI) heading_delta -= M_2_PI;
     return heading_delta;
   }
 
@@ -135,7 +147,7 @@ namespace farmland_controller
    */
   float PP::getTurningRadius(float dist_to_target_point, float heading_delta)
   {
-    return 0;
+    return dist_to_target_point / (2.0 * sin(heading_delta));
   }
 
   /**
@@ -145,6 +157,9 @@ namespace farmland_controller
   geometry_msgs::Twist PP::getTwist(float radius, float target_speed)
   {
     geometry_msgs::Twist twist;
+    float turning_speed = target_speed/radius;
+    twist.linear.x = target_speed;
+    twist.angular.z = turning_speed;
     return twist;
   } // eg. ld = clip(k_dd * speed, min_ld, max_ld)
 }

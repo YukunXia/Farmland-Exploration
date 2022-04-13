@@ -1,3 +1,4 @@
+#include <cmath>
 #include <gazebo_msgs/ModelState.h>
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/PoseStamped.h>
@@ -52,6 +53,14 @@ namespace farmland_controller
      * Extract yaw from a pose
      */
     float yawFromPose(geometry_msgs::Pose &pose);
+
+    /**
+     * @brief 
+     * 
+     * @param yaw 
+     * @return geometry_msgs::Quaternion 
+     */
+    geometry_msgs::Quaternion quatFromYaw(float yaw);
 
     /**
      * Gets the lookahead distance for the robot
