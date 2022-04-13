@@ -42,7 +42,8 @@ namespace farmland_controller
      * 
      * @param robot_pose 
      * @param path 
-     * @return geometry_msgs::Twist 
+     * @return geometry_msgs::Twist, bool. Twist is the cmd to the robot, bool is
+     * true if the robot is within goal_dist_epsilon of the end of the path
      */
     std::pair<geometry_msgs::Twist,bool> getCommand(gazebo_msgs::ModelState &robot_state,
                                   const nav_msgs::Path &path);

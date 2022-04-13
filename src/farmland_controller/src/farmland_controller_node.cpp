@@ -37,12 +37,12 @@ ros::ServiceClient global_path_client; // service client to call global planner
 ros::Publisher pub_cmd_vel;
 
 /** --------- hyper parameters ---------------*/
-float desired_speed;       // desried speed of the robot
-float goal_dist_epsilon; // the distance which the robot needs to get to the
+float desired_speed = 1;       // desried speed of the robot
+float goal_dist_epsilon = 0.25; // the distance which the robot needs to get to the
                            // goal point
-float max_ld;              // max lookahead distance
-float min_ld;              // Min lookahead distance
-float k_dd; // Lookahead speed mulitplier. 
+float max_ld 5;              // max lookahead distance
+float min_ld = 0.5;              // Min lookahead distance
+float k_dd = 2; // Lookahead speed mulitplier. 
             // eg. ld = clip(k_dd * speed, min_ld, max_ld)
 
 
