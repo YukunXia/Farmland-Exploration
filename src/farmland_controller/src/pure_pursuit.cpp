@@ -4,6 +4,7 @@ namespace farmland_controller {
 std::pair<geometry_msgs::Twist, bool>
 PP::getCommand(gazebo_msgs::ModelState &robot_state,
                const nav_msgs::Path &path) {
+  cur_robot_state = robot_state;
   float robot_speed;       // Translational speed of the robot
   float ld;                // The lookahead distance
   geometry_msgs::Point tp; // The lookahead point
@@ -12,6 +13,8 @@ PP::getCommand(gazebo_msgs::ModelState &robot_state,
   float target_dist;            // Distance to target point
   float turning_radius;         // Turning radius the robot needs to get to tp
   geometry_msgs::Twist cmd_vel; // Command sent to robot
+
+  marker_array.markers.clear();
 
   geometry_msgs::Point goal_point = path.poses.back().pose.position;
   robot_speed = sqrt(pow(robot_state.twist.linear.x, 2) +
@@ -83,6 +86,7 @@ float PP::getLookAheadDistance(float robot_speed) {
     ld = min_ld;
   if (ld > max_ld)
     ld = max_ld;
+
   return ld;
 }
 
@@ -97,41 +101,69 @@ geometry_msgs::Point PP::getTargetPoint(geometry_msgs::Pose &robot_pose,
                                           path.poses[0].pose.position) < ld;
   bool at_end = PP::euclideanDistance2d(robot_pose.position,
                                         path.poses.back().pose.position) < ld;
-
+  bool found_tp = false;
   if (at_end) {
     ROS_INFO_THROTTLE(0.2, "PP At end");
     // Return the last point
-    return path.poses.back().pose.position;
+    point = path.poses.back().pose.position;
+    found_tp = true;
   }
 
-  if (at_start) {
+  if (at_start && !found_tp) {
     ROS_INFO_THROTTLE(0.2, "PP At Start");
     // Search from start to end, return last point le ld away
     for (int i = 0; i < path.poses.size(); i++) {
       if (PP::euclideanDistance2d(robot_pose.position,
                                   path.poses[i].pose.position) > ld) {
+        found_tp = true;
         break;
       }
       point = path.poses[i].pose.position;
     }
-    return point;
   }
 
   // At this point robot is neither near start nor end of path.
   // Search from end to start, return last point ge ld away
-  ROS_INFO_THROTTLE(0.2, "PP in Middle");
-  bool found_point = false;
-  for (int i = path.poses.size() - 1; i >= 0; i--) {
-    if (PP::euclideanDistance2d(robot_pose.position,
-                                path.poses[i].pose.position) <= ld) {
-      point = path.poses[i].pose.position;
-      found_point = true;
-      break;
+  if (!found_tp) {
+    ROS_INFO_THROTTLE(0.2, "PP in Middle");
+    for (int i = path.poses.size() - 1; i >= 0; i--) {
+      if (PP::euclideanDistance2d(robot_pose.position,
+                                  path.poses[i].pose.position) <= ld) {
+        point = path.poses[i].pose.position;
+        found_tp = true;
+        break;
+      }
+    }
+    if (!found_tp) {
+      point = path.poses.back().pose.position;
+      found_tp = true;
     }
   }
-  if (!found_point) {
-    return path.poses.back().pose.position;
-  }
+
+  // tp;
+  visualization_msgs::Marker marker;
+  marker.header.stamp = ros::Time::now();
+  marker.header.frame_id = "world";
+  marker.frame_locked = true;
+  marker.ns = PP_MARKER_NS;
+  marker.id = 10;
+  marker.type = visualization_msgs::Marker::CUBE;
+  marker.action = visualization_msgs::Marker::ADD;
+  marker.pose.position = point;
+  marker.pose.orientation.x = 0;
+  marker.pose.orientation.y = 0;
+  marker.pose.orientation.z = 0;
+  marker.pose.orientation.w = 1;
+  marker.color.r = 1;
+  marker.color.g = 0;
+  marker.color.b = 0;
+  marker.color.a = 1;
+  marker.scale.x = 0.1;
+  marker.scale.y = 0.1;
+  marker.scale.z = 0.5;
+  marker.lifetime = ros::Duration(PP_MARKER_LIFETIME);
+  marker_array.markers.push_back(marker);
+
   return point;
 }
 
@@ -187,11 +219,72 @@ float PP::getLinearCommand(float dist_to_target_point, float dist_to_goal_point,
     speed = approach_speed;
   if (at_goal)
     speed = 0;
+
+  visualization_msgs::Marker marker;
+
+  marker.header.stamp = ros::Time::now();
+  marker.header.frame_id = "base_link";
+  marker.frame_locked = true;
+  marker.ns = PP_MARKER_NS;
+  marker.id = 20;
+  marker.type = visualization_msgs::Marker::ARROW;
+  marker.action = visualization_msgs::Marker::ADD;
+  marker.scale.x = 0.1; // shaft_diameter
+  marker.scale.y = 0.2; // head diameter
+  marker.scale.z = 0.1; // head length
+  geometry_msgs::Point start_point;
+  start_point.x = 0;
+  start_point.y = 0;
+  start_point.z = 0.5;
+  marker.points.push_back(start_point);
+  geometry_msgs::Point end_point;
+  end_point.x = speed * 2;
+  end_point.y = 0;
+  end_point.z = 0.5;
+  marker.points.push_back(end_point);
+  marker.color.r = 0;
+  marker.color.g = 1;
+  marker.color.b = 0;
+  marker.color.a = 1;
+  marker.lifetime = ros::Duration(PP_MARKER_LIFETIME);
+  marker_array.markers.push_back(marker);
+
   return speed;
 } // namespace farmland_controller
 
 float PP::getAngularCommand(float speed, float radius) {
-  return speed / radius;
+  float cmd = speed / radius;
+
+  visualization_msgs::Marker marker;
+  marker.header.stamp = ros::Time::now();
+  marker.header.frame_id = "base_link";
+  marker.frame_locked = true;
+  marker.ns = PP_MARKER_NS;
+  marker.id = 30;
+  marker.type = visualization_msgs::Marker::ARROW;
+  marker.action = visualization_msgs::Marker::ADD;
+  marker.scale.x = 0.1; // shaft_diameter
+  marker.scale.y = 0.2; // head diameter
+  marker.scale.z = 0.1; // head length
+
+  geometry_msgs::Point start_point;
+  start_point.x = 0;
+  start_point.y = 0;
+  start_point.z = 0.5;
+  marker.points.push_back(start_point);
+  geometry_msgs::Point end_point;
+  end_point.x = 0;
+  end_point.y = cmd;
+  end_point.z = 0.5;
+  marker.points.push_back(end_point);
+  marker.color.r = 0;
+  marker.color.g = 0;
+  marker.color.b = 1;
+  marker.color.a = 1;
+  marker.lifetime = ros::Duration(PP_MARKER_LIFETIME);
+  marker_array.markers.push_back(marker);
+
+  return cmd;
 }
 
 /**

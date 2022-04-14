@@ -7,6 +7,7 @@ Panels:
         - /Global Options1
         - /Status1
         - /Path1
+        - /MarkerArray1
       Splitter Ratio: 0.4696652591228485
     Tree Height: 1423
   - Class: rviz/Selection
@@ -27,7 +28,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: ""
+    SyncSource: PointCloud2
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -261,6 +262,14 @@ Visualization Manager:
       Update Interval: 0
       Value: true
       Visual Enabled: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /farmland_controlller/marker_array
+      Name: MarkerArray
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -326,4 +335,4 @@ Window Geometry:
     collapsed: false
   Width: 3068
   X: 129
-  Y: 64
+  Y: 54

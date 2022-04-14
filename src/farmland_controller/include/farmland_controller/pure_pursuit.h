@@ -6,7 +6,14 @@
 
 #include <tf/transform_datatypes.h>
 
+#include <visualization_msgs/MarkerArray.h>
+#include <visualization_msgs/Marker.h>
+#include <ros/duration.h>
+
 #include <nav_msgs/Path.h>
+
+#define PP_MARKER_NS "pure_pursuit_markers"
+#define PP_MARKER_LIFETIME 1
 
 namespace farmland_controller
 {
@@ -23,6 +30,9 @@ namespace farmland_controller
     float max_ld;            // max lookahead distance
     float min_ld;            // Min lookahead distance
     float k_dd;              // Lookahead speed mulitplier.
+    gazebo_msgs::ModelState cur_robot_state;
+
+    visualization_msgs::MarkerArray marker_array;
 
     PurePursuit():
       desired_speed(1),
@@ -30,7 +40,7 @@ namespace farmland_controller
       max_ld(2),
       min_ld(0.5),
       k_dd(1),
-      approach_dist(2),
+      approach_dist(1.5),
       approach_speed(0.3),
       stationary_threshold(0.1){
     }

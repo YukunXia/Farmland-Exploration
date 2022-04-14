@@ -18,6 +18,7 @@
 #include <farmland_controller/pure_pursuitFeedback.h>
 #include <farmland_controller/pure_pursuitResult.h>
 
+#include <visualization_msgs/MarkerArray.h>
 #include <farmland_controller/pure_pursuit.h>
 
 /** ----------- defines --------------------- */
@@ -36,10 +37,11 @@ gazebo_msgs::ModelState robot_state; // current state of the robot
 bool robot_state_is_initialized =
     false; // set to true if robot state received, else false
 ros::Publisher pub_cmd_vel;
+ros::Publisher pub_marker_array;
 
 /** --------- hyper parameters ---------------*/
 float desired_speed = 1;        // desried speed of the robot
-float goal_dist_epsilon = 0.25; // the distance which the robot needs to get to
+float goal_dist_epsilon = 0.5; // the distance which the robot needs to get to
                                 // the goal point
 float max_ld = 3;   // max lookahead distance
 float min_ld = 0.5; // Min lookahead distance
@@ -90,6 +92,7 @@ void execute(const farmland_controller::pure_pursuitGoalConstPtr goal,
     }
 
     pub_cmd_vel.publish(cmd_vel);
+    pub_marker_array.publish(pp.marker_array);
 
     loop_rate.sleep();
   }
@@ -114,6 +117,9 @@ int main(int argc, char **argv) {
 
   pub_cmd_vel = nh.advertise<geometry_msgs::Twist>(
       "/husky_velocity_controller/cmd_vel", 5);
+
+  pub_marker_array = nh.advertise<visualization_msgs::MarkerArray>(
+    "/farmland_controlller/marker_array", 5);
 
   Server server(nh, ACTION_SERVER_NAME, boost::bind(&execute, _1, &server, &nh),
                 false);
