@@ -2,28 +2,39 @@
 #include <farmland_frontier_detection/PointArray.h>
 #include <geometry_msgs/Point.h>
 #include <nav_msgs/OccupancyGrid.h>
-#include <visualization_msgs/Marker.h>
-#include <visualization_msgs/MarkerArray.h>
+#include <queue>
 
-#define MARKER_FRONTIER_Z 0 // Height of the markers for detected frontiers
+#define FREESPACE 0
+#define UNKOWN -1
 
 namespace farmland_frontier_detection {
 
 typedef Eigen::Matrix<int8_t, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
-    Matrix;
+    MatrixXi8;
+
+typedef Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
+    MatrixXb;
+
+class MapLocation {
+public:
+  int row;
+  int col;
+  MapLocation();
+  MapLocation(MapLocation loc, int delta_row, int delta_col);
+};
+
+typedef std::vector<MapLocation> MapLocations;
 
 class FrontierDetector {
 public:
-  Matrix occpancy_grid;
-  Matrix wavefront_seen;
-  visualization_msgs::MarkerArray marker_array;
+  MatrixXi8 occupancy_grid;
+  MatrixXb wavefront_seen;
 
   FrontierDetector();
 
-  farmland_frontier_detection::PointArray
-  getDetections(const geometry_msgs::Point &robot_position,
-                const Matrix &occupancy_grid);
-
-  void addFrontierToMarkerArray(int x, int y);
+  MapLocations getDetections(const MapLocation &robot_location,
+                             const MatrixXi8 &occupancy_grid);
+  bool isValid(const MapLocation &loc);
+  bool locationIsFrontier(const MapLocation &loc);
 };
 } // namespace farmland_frontier_detection
