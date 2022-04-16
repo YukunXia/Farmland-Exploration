@@ -1,9 +1,11 @@
 #include <Eigen/Dense>
+#include <farmland_frontier_detection/GetFrontiers.h>
 #include <farmland_frontier_detection/frontier_detection.h>
 #include <nav_msgs/OccupancyGrid.h>
 #include <ros/ros.h>
 
 ros::Subscriber occupancy_grid_sub;
+ros::ServiceServer service;
 
 farmland_frontier_detection::FrontierDetector fd;
 nav_msgs::OccupancyGrid occupancy_grid;
@@ -18,6 +20,12 @@ void occupancyGridCallback(const nav_msgs::OccupancyGridConstPtr raw_map_msg) {
       occupancy_grid.info.width);
 }
 
+bool getFrontiers(farmland_frontier_detection::GetFrontiers::Request &req,
+                  farmland_frontier_detection::GetFrontiers::Response &res) {
+  res.points = fd.getDetections(req.robot_position, occupancy_matrix);
+  return true;
+}
+
 int main(int argc, char **argv) {
   ros::init(argc, argv, "farmland_frontier_detection_node");
   ros::NodeHandle nh;
@@ -25,6 +33,7 @@ int main(int argc, char **argv) {
 
   occupancy_grid_sub = nh.subscribe<nav_msgs::OccupancyGrid>(
       "/projected_map", 100, occupancyGridCallback);
+  service = nh.advertiseService("get_frontiers", getFrontiers);
 
   while (ros::ok()) {
     ros::spinOnce();
