@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(farmland_controller)
+project(farmland_frontier_detection)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -8,15 +8,15 @@ project(farmland_controller)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  gazebo_ros
   geometry_msgs
   nav_msgs
   roscpp
   sensor_msgs
   std_msgs
-  tf
-  actionlib_msgs 
+  message_generation
 )
+
+find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -52,11 +52,10 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+add_message_files(
+  FILES
+  PointArray.msg
+)
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -66,18 +65,16 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate actions in the 'action' folder
-add_action_files(
-  DIRECTORY action
-  FILES pure_pursuit.action
-)
+# add_action_files(
+#   FILES
+#   Action1.action
+#   Action2.action
+# )
 
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
   DEPENDENCIES
-  nav_msgs
-  std_msgs
-  actionlib_msgs
-  # geometry_msgs#   nav_msgs#   sensor_msgs#   std_msgs
+  geometry_msgs#   nav_msgs#   sensor_msgs#   std_msgs
 )
 
 ################################################
@@ -110,10 +107,10 @@ generate_messages(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
- INCLUDE_DIRS include
- # LIBRARIES farmland_controller
- CATKIN_DEPENDS actionlib_msgs gazebo_ros geometry_msgs nav_msgs roscpp sensor_msgs std_msgs tf
- DEPENDS system_lib
+#  INCLUDE_DIRS include
+#  LIBRARIES farmland_frontier_detection
+ CATKIN_DEPENDS geometry_msgs nav_msgs roscpp sensor_msgs std_msgs message_runtime
+#  DEPENDS system_lib
 )
 
 ###########
@@ -123,20 +120,17 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-  include ${catkin_INCLUDE_DIRS}
+  include
+  ${catkin_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
-add_library(pure_pursuit
-  src/pure_pursuit.cpp
+add_library(frontier_detection
+  src/frontier_detection.cpp
 )
-set_target_properties(pure_pursuit
-  PROPERTIES PUBLIC_HEADER include/${PROJECT_NAME}/pure_pursuit.h
+set_target_properties(frontier_detection
+  PROPERTIES PUBLIC_HEADER include/${PROJECT_NAME}/frontier_detection.h
 )
-
-# target_link_libraries(pure_pursuit,
-#   ${catkin_LIBRARIES}
-# )
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -146,25 +140,22 @@ set_target_properties(pure_pursuit
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-
-add_executable(${PROJECT_NAME}_node src/farmland_controller_node.cpp)
+add_executable(${PROJECT_NAME}_node src/farmland_frontier_detection_node.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
 ## e.g. "rosrun someones_pkg node" instead of "rosrun someones_pkg someones_pkg_node"
-
-# comment below
 # set_target_properties(${PROJECT_NAME}_node PROPERTIES OUTPUT_NAME node PREFIX "")
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-add_dependencies(${PROJECT_NAME}_node pure_pursuit ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(${PROJECT_NAME}_node
-  pure_pursuit
-  ${catkin_LIBRARIES}
+  frontier_detection
+  ${catkin_LIBRARIES} Eigen3::Eigen
 )
 
 #############
@@ -214,14 +205,7 @@ target_link_libraries(${PROJECT_NAME}_node
 #############
 
 ## Add gtest based cpp test target and link libraries
-catkin_add_gtest(pure_pursuit_test test/pure_pursuit_test.cpp)
-if(TARGET pure_pursuit_test)
-  # target_link_libraries(pure_pursuit_test pure_pursuit ${PROJECT_NAME})
-  add_dependencies(pure_pursuit_test pure_pursuit)
-  target_link_libraries(pure_pursuit_test pure_pursuit ${catkin_LIBRARIES})
-endif()
-
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_farmland_controller.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_farmland_frontier_detection.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
