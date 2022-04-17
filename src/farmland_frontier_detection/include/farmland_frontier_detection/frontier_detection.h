@@ -3,6 +3,7 @@
 #include <geometry_msgs/Point.h>
 #include <nav_msgs/OccupancyGrid.h>
 #include <queue>
+#include <ros/ros.h>
 
 #define FREESPACE 0
 #define UNKOWN -1
@@ -36,5 +37,7 @@ public:
                              const MatrixXi8 &occupancy_grid);
   bool isValid(const MapLocation &loc);
   bool locationIsFrontier(const MapLocation &loc);
+  std::pair<MapLocation, bool>
+  getClosestFreeCell(const MapLocation &robot_location);
 };
 } // namespace farmland_frontier_detection

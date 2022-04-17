@@ -125,18 +125,25 @@ geometry_msgs::Point PP::getTargetPoint(geometry_msgs::Pose &robot_pose,
 
   // At this point robot is neither near start nor end of path.
   // Search from end to start, return last point ge ld away
+  geometry_msgs::Point closest_point;
+  float closest_dist = std::numeric_limits<float>::infinity();
   if (!found_tp) {
     ROS_INFO_THROTTLE(0.2, "PP in Middle");
     for (int i = path.poses.size() - 1; i >= 0; i--) {
-      if (PP::euclideanDistance2d(robot_pose.position,
-                                  path.poses[i].pose.position) <= ld) {
+      float dist = PP::euclideanDistance2d(robot_pose.position,
+                                  path.poses[i].pose.position);
+      if (dist <= ld) {
         point = path.poses[i].pose.position;
         found_tp = true;
         break;
       }
+      if (dist < closest_dist) {
+        closest_dist = dist;
+        closest_point = path.poses[i].pose.position;
+      }
     }
     if (!found_tp) {
-      point = path.poses.back().pose.position;
+      point = closest_point;
       found_tp = true;
     }
   }
@@ -218,8 +225,10 @@ float PP::getLinearCommand(float dist_to_target_point, float dist_to_goal_point,
   float speed = desired_speed;
   if (approaching)
     speed = approach_speed;
-  if (abs(heading_delta) > M_PI_2)
+  if (abs(heading_delta) > M_PI_4)
     speed = 0.2;
+  if (abs(heading_delta) > M_PI_2)
+    speed = -0.2;
   if (at_goal)
     speed = 0;
 
