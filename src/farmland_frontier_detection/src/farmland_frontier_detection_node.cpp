@@ -7,7 +7,7 @@
 #include <visualization_msgs/MarkerArray.h>
 
 #define FD_MARKER_NS "frontier_detection_ns"
-#define FD_MARKER_LIFETIME 5
+#define FD_MARKER_LIFETIME 1
 
 #define COST_MAP "/planner/costmap/costmap"
 // #define COST_MAP "/projected_map"

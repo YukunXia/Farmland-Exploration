@@ -47,7 +47,7 @@ MapLocations FrontierDetector::getDetections(const MapLocation &robot_location,
     Q.pop();
 
     if (!isValid(cur_loc) || wavefront_seen(cur_loc.row, cur_loc.col) ||
-        occupancy_grid(cur_loc.row, cur_loc.col) != FREESPACE)
+        occupancy_grid(cur_loc.row, cur_loc.col) > FREESPACE_THRESH)
       continue;
 
     wavefront_seen(cur_loc.row, cur_loc.col) = true;
@@ -71,8 +71,10 @@ bool FrontierDetector::isValid(const MapLocation &loc) {
 }
 
 bool FrontierDetector::locationIsFrontier(const MapLocation &loc) {
-  if (!isValid(loc) || occupancy_grid(loc.row, loc.col) != FREESPACE)
+  float grid_val = occupancy_grid(loc.row, loc.col);
+  if (!isValid(loc) || grid_val > FREESPACE_THRESH || grid_val == UNKOWN)
     return false;
+
 
   MapLocations locs;
   locs.push_back(MapLocation(loc, 1, 0));
@@ -106,18 +108,18 @@ FrontierDetector::getClosestFreeCell(const MapLocation &robot_location) {
 
     wavefront_seen(cur_loc.row, cur_loc.col) = true;
 
-    if (occupancy_grid(cur_loc.row, cur_loc.col) == FREESPACE) {
+    float grid_val = occupancy_grid(cur_loc.row, cur_loc.col);
+    if (grid_val <= FREESPACE_THRESH && grid_val != UNKOWN) {
       closest_free_cell = cur_loc;
       result = true;
       break;
-    } else {
-      Q.push(MapLocation(cur_loc, 1, 0));
-      Q.push(MapLocation(cur_loc, -1, 0));
-      Q.push(MapLocation(cur_loc, 0, 1));
-      Q.push(MapLocation(cur_loc, 0, -1));
     }
+    Q.push(MapLocation(cur_loc, 1, 0));
+    Q.push(MapLocation(cur_loc, -1, 0));
+    Q.push(MapLocation(cur_loc, 0, 1));
+    Q.push(MapLocation(cur_loc, 0, -1));
+    
   }
-
   return {closest_free_cell, result};
 }
 

@@ -5,7 +5,7 @@
 #include <queue>
 #include <ros/ros.h>
 
-#define FREESPACE 0
+#define FREESPACE_THRESH 0 // inclusive
 #define UNKOWN -1
 
 namespace farmland_frontier_detection {

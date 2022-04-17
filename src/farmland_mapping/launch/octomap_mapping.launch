@@ -29,7 +29,7 @@
         <param name = "filter_ground" type="bool" value = "true" />
 
         <!-- Distance threshold for points (in z direction) to be segmented to the ground plane -->
-        <param name = "ground_filter/distance" type="double" value = "0.1" />
+        <param name = "ground_filter/distance" type="double" value = "0.04" />
         <!-- Angular threshold of the detected plane from the horizontal plane to be detected as ground -->
         <param name = "ground_filter/angle" type="double" value = "0.15" />
         <!-- Distance threshold from z=0 for a plane to be detected as ground (4th coefficient of the plane equation from PCL) -->

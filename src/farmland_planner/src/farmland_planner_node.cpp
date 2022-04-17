@@ -14,6 +14,7 @@ ros::ServiceClient global_planner_client;
 nav_msgs::GetPlan global_planner_srv;
 
 constexpr float DIST_TO_GOAL_THRESHOLD = 1.0f;
+constexpr float FRONTIER_PLANNING_PERIOD = 5;
 
 std::vector<geometry_msgs::PoseStamped> goal_poses;
 int cur_goal = 0;
@@ -155,6 +156,7 @@ int main(int argc, char **argv) {
 
   ros::Rate loop_rate(100);
   ROS_INFO("Planner Node: looping starts\n");
+  ros::Time last_frontier_call = ros::Time::now();
   while (ros::ok()) {
     bool PP_has_started = false;
 
@@ -169,6 +171,7 @@ int main(int argc, char **argv) {
       geometry_msgs::PoseStamped goal_pose;
       bool get_goal_pose_succ;
       std::tie(goal_pose, get_goal_pose_succ) = getGoalPose();
+      last_frontier_call = ros::Time::now();
 
       if (!get_goal_pose_succ) {
         ROS_INFO("Planner node: Failed to get a new frontier. Success?");
@@ -200,6 +203,10 @@ int main(int argc, char **argv) {
         PP_has_started = true;
       }
       if (feedback.dist_to_goal < DIST_TO_GOAL_THRESHOLD) {
+        ac_ptr_PP->cancelGoal();
+      }
+      ros::Duration frontier_call_duration = ros::Time::now() - last_frontier_call;
+      if (frontier_call_duration.toSec() > FRONTIER_PLANNING_PERIOD) {
         ac_ptr_PP->cancelGoal();
       }
       ros::spinOnce();
