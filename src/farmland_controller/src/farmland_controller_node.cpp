@@ -18,8 +18,8 @@
 #include <farmland_controller/pure_pursuitFeedback.h>
 #include <farmland_controller/pure_pursuitResult.h>
 
-#include <visualization_msgs/MarkerArray.h>
 #include <farmland_controller/pure_pursuit.h>
+#include <visualization_msgs/MarkerArray.h>
 
 /** ----------- defines --------------------- */
 #define NODE_NAME                                                              \
@@ -40,13 +40,13 @@ ros::Publisher pub_cmd_vel;
 ros::Publisher pub_marker_array;
 
 /** --------- hyper parameters ---------------*/
-float desired_speed = 1;        // desried speed of the robot
+float desired_speed = 1;       // desried speed of the robot
 float goal_dist_epsilon = 0.5; // the distance which the robot needs to get to
-                                // the goal point
-float max_ld = 3;   // max lookahead distance
-float min_ld = 0.5; // Min lookahead distance
-float k_dd = 0.75;  // Lookahead speed mulitplier.
-                    // eg. ld = clip(k_dd * speed, min_ld, max_ld)
+                               // the goal point
+float max_ld = 3;              // max lookahead distance
+float min_ld = 0.5;            // Min lookahead distance
+float k_dd = 0.75;             // Lookahead speed mulitplier.
+                               // eg. ld = clip(k_dd * speed, min_ld, max_ld)
 
 /** ---------------- Callbacks ------------- */
 /**
@@ -72,7 +72,7 @@ void execute(const farmland_controller::pure_pursuitGoalConstPtr goal,
   ros::Rate loop_rate(PURE_PURSUIT_LOOP_RATE);
 
   // Goal point is end of path
-  geometry_msgs::Point goal_point = goal->path.poses.back().pose.position;
+  const geometry_msgs::Point goal_point = goal->path.poses.back().pose.position;
   bool reached_goal = false;
   geometry_msgs::Twist cmd_vel;
   ROS_INFO("Controller: Beginning execution");
@@ -85,6 +85,10 @@ void execute(const farmland_controller::pure_pursuitGoalConstPtr goal,
     }
 
     std::tie(cmd_vel, reached_goal) = pp.getCommand(robot_state, goal->path);
+    feedback.dist_to_goal =
+        farmland_controller::PurePursuit::euclideanDistance2d(
+            goal_point, robot_state.pose.position);
+    as_ptr->publishFeedback(feedback);
 
     if (reached_goal) {
       result.success = true;
@@ -119,7 +123,7 @@ int main(int argc, char **argv) {
       "/husky_velocity_controller/cmd_vel", 5);
 
   pub_marker_array = nh.advertise<visualization_msgs::MarkerArray>(
-    "/farmland_controlller/marker_array", 5);
+      "/farmland_controlller/marker_array", 5);
 
   Server server(nh, ACTION_SERVER_NAME, boost::bind(&execute, _1, &server, &nh),
                 false);

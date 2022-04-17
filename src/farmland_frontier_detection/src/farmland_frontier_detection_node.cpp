@@ -8,6 +8,10 @@
 
 #define FD_MARKER_NS "frontier_detection_ns"
 #define FD_MARKER_LIFETIME 5
+
+#define COST_MAP "/planner/costmap/costmap"
+// #define COST_MAP "/projected_map"
+
 ros::Subscriber occupancy_grid_sub;
 ros::ServiceServer service;
 ros::Publisher pub_marker_array;
@@ -75,31 +79,30 @@ getPoint(const farmland_frontier_detection::MapLocation &location) {
 visualization_msgs::MarkerArray
 getMarkers(std::vector<geometry_msgs::Point> &points) {
   visualization_msgs::MarkerArray markers;
-  int id = 0;
+  visualization_msgs::Marker marker;
+  marker.header.stamp = ros::Time::now();
+  marker.header.frame_id = "world";
+  marker.frame_locked = true;
+  marker.ns = FD_MARKER_NS;
+  marker.id = 0;
+  marker.type = visualization_msgs::Marker::CUBE_LIST;
+  marker.action = visualization_msgs::Marker::ADD;
+  marker.pose.orientation.x = 0;
+  marker.pose.orientation.y = 0;
+  marker.pose.orientation.z = 0;
+  marker.pose.orientation.w = 1;
   for (const auto &point : points) {
-    visualization_msgs::Marker marker;
-    marker.header.stamp = ros::Time::now();
-    marker.header.frame_id = "world";
-    marker.frame_locked = true;
-    marker.ns = FD_MARKER_NS;
-    marker.id = id++;
-    marker.type = visualization_msgs::Marker::CUBE;
-    marker.action = visualization_msgs::Marker::ADD;
-    marker.pose.position = point;
-    marker.pose.orientation.x = 0;
-    marker.pose.orientation.y = 0;
-    marker.pose.orientation.z = 0;
-    marker.pose.orientation.w = 1;
-    marker.color.r = 1;
-    marker.color.g = 1;
-    marker.color.b = 0;
-    marker.color.a = 1;
-    marker.scale.x = 0.1;
-    marker.scale.y = 0.1;
-    marker.scale.z = 0.5;
-    marker.lifetime = ros::Duration(FD_MARKER_LIFETIME);
-    markers.markers.push_back(marker);
+    marker.points.push_back(point);
   }
+  marker.color.r = 1;
+  marker.color.g = 1;
+  marker.color.b = 0;
+  marker.color.a = 1;
+  marker.scale.x = 0.1;
+  marker.scale.y = 0.1;
+  marker.scale.z = 0.5;
+  marker.lifetime = ros::Duration(FD_MARKER_LIFETIME);
+  markers.markers.push_back(marker);
   return markers;
 }
 
@@ -123,7 +126,7 @@ int main(int argc, char **argv) {
   ros::Rate loop_rate(100);
 
   occupancy_grid_sub = nh.subscribe<nav_msgs::OccupancyGrid>(
-      "/projected_map", 100, occupancyGridCallback);
+      COST_MAP, 100, occupancyGridCallback);
   service = nh.advertiseService("get_frontiers", getFrontiers);
   pub_marker_array = nh.advertise<visualization_msgs::MarkerArray>(
       "/farmland_frontier_detection/marker_array", 5);

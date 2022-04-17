@@ -14,6 +14,7 @@
 
 #define PP_MARKER_NS "pure_pursuit_markers"
 #define PP_MARKER_LIFETIME 1
+#define MAX_ANGULAR_VEL 2
 
 namespace farmland_controller
 {
@@ -66,7 +67,7 @@ namespace farmland_controller
     std::pair<geometry_msgs::Twist,bool> getCommand(gazebo_msgs::ModelState &robot_state,
                                   const nav_msgs::Path &path);
 
-    float euclideanDistance2d(geometry_msgs::Point a, geometry_msgs::Point b);
+    static float euclideanDistance2d(geometry_msgs::Point a, geometry_msgs::Point b);
 
     /**
      * Extract yaw from a pose
@@ -106,7 +107,7 @@ namespace farmland_controller
     float getLinearCommand(float dist_to_target_point, float dist_to_goal_point,
                           float heading_delta, float turning_radius);
 
-    float getAngularCommand(float speed, float radius);
+    float getAngularCommand(float speed, float radius, float heading_delta);
 
     /**
      * Gets the twist (translational velocity and angular velocity) from a turning

@@ -5,4 +5,4 @@ nav_msgs/Path path
 bool success
 ---
 #feedback
-float32 completion_percent
+float32 dist_to_goal

@@ -30,7 +30,8 @@ PP::getCommand(gazebo_msgs::ModelState &robot_state,
 
   float target_linear_speed =
       getLinearCommand(target_dist, dist_to_goal, alpha, turning_radius);
-  float target_angular_speed = getAngularCommand(desired_speed, turning_radius);
+  float target_angular_speed =
+      getAngularCommand(desired_speed, turning_radius, alpha);
 
   ROS_INFO_THROTTLE(0.2, "PP: ld= %.4f, hd=%.4f, radius=%.4f", ld, alpha,
                     turning_radius);
@@ -193,11 +194,11 @@ float PP::getHeadingDelta(geometry_msgs::Pose &robot_pose,
   // Constrain heading_delta to range [-pi, pi)
   while (heading_delta < -M_PI) {
     ROS_WARN_THROTTLE(2, "PP: Heading less than -pi");
-    heading_delta += 2*M_PI;
+    heading_delta += 2 * M_PI;
   }
   while (heading_delta >= M_PI) {
     ROS_WARN_THROTTLE(2, "PP: Heading greater than +pi");
-    heading_delta -= 2*M_PI;
+    heading_delta -= 2 * M_PI;
   }
   return heading_delta;
 }
@@ -217,6 +218,8 @@ float PP::getLinearCommand(float dist_to_target_point, float dist_to_goal_point,
   float speed = desired_speed;
   if (approaching)
     speed = approach_speed;
+  if (abs(heading_delta) > M_PI_2)
+    speed = 0.2;
   if (at_goal)
     speed = 0;
 
@@ -233,8 +236,7 @@ float PP::getLinearCommand(float dist_to_target_point, float dist_to_goal_point,
   marker.scale.y = 0.2; // head diameter
   marker.scale.z = 0.1; // head length
   geometry_msgs::Point start_point;
-  start_point.x = 0;
-  start_point.y = 0;
+  start_point.x = 0; start_point.y = 0;
   start_point.z = 0.5;
   marker.points.push_back(start_point);
   geometry_msgs::Point end_point;
@@ -252,8 +254,12 @@ float PP::getLinearCommand(float dist_to_target_point, float dist_to_goal_point,
   return speed;
 } // namespace farmland_controller
 
-float PP::getAngularCommand(float speed, float radius) {
-  float cmd = speed / radius;
+float PP::getAngularCommand(float speed, float radius, float heading_delta) {
+  float cmd;
+  if (abs(heading_delta) < M_PI_2)
+    cmd = speed / radius;
+  else
+    cmd = MAX_ANGULAR_VEL * ((heading_delta > 0) - (heading_delta < 0));
 
   visualization_msgs::Marker marker;
   marker.header.stamp = ros::Time::now();

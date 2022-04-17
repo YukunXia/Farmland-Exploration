@@ -21,13 +21,24 @@ MapLocations FrontierDetector::getDetections(const MapLocation &robot_location,
   std::queue<MapLocation> Q;
   Q.push(robot_location);
 
+  int offset = 10;
+  Q.push(MapLocation(robot_location, offset, 0));
+  Q.push(MapLocation(robot_location, offset, offset));
+  Q.push(MapLocation(robot_location, 0     , offset));
+  Q.push(MapLocation(robot_location,-offset, offset));
+  Q.push(MapLocation(robot_location,-offset, 0));
+  Q.push(MapLocation(robot_location,-offset,-offset));
+  Q.push(MapLocation(robot_location, 0     ,-offset));
+  Q.push(MapLocation(robot_location, offset,-offset));
+
   while (!Q.empty()) {
     MapLocation cur_loc = Q.front();
     Q.pop();
 
-    if (!isValid(cur_loc) || wavefront_seen(cur_loc.row, cur_loc.col)) {
+    if (!isValid(cur_loc) 
+      || wavefront_seen(cur_loc.row, cur_loc.col)
+      || occupancy_grid(cur_loc.row, cur_loc.col) != FREESPACE)
       continue;
-    }
 
     wavefront_seen(cur_loc.row, cur_loc.col) = true;
 

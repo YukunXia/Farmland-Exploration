@@ -17,6 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
   actionlib
   actionlib_msgs
   farmland_controller
+  farmland_frontier_detection
 )
 
 ## System dependencies are found with CMake's conventions
@@ -111,7 +112,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES farmland_planner
-   CATKIN_DEPENDS farmland_controller actionlib_msgs geometry_msgs nav_msgs roscpp sensor_msgs std_msgs tf
+   CATKIN_DEPENDS farmland_controller farmland_frontier_detection actionlib_msgs geometry_msgs nav_msgs roscpp sensor_msgs std_msgs tf
 #  DEPENDS system_lib
 )
 
@@ -152,12 +153,13 @@ add_executable(${PROJECT_NAME}_node src/farmland_planner_node.cpp)
 add_dependencies(${PROJECT_NAME}_node 
   ${${PROJECT_NAME}_EXPORTED_TARGETS} 
   ${farmland_controller_EXPORTED_TARGETS} 
+  ${farmland_frontier_detection_EXPORTED_TARGETS}
   ${catkin_EXPORTED_TARGETS}
 )
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(${PROJECT_NAME}_node
-  ${catkin_LIBRARIES}
+  ${catkin_LIBRARIES} pure_pursuit
 )
 
 # add_executable(global_${PROJECT_NAME}_test src/global_planner_test.cpp)
