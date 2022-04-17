@@ -39,7 +39,7 @@ static:
 
 inflation:
   inflation_radius: 1.0 # TODO: Check if 1.1m inflation is too high, or if the unit is in meter
-  cost_scaling_factor: 1.0 # TODO: Tune this. It's 10.0 in official example
+  cost_scaling_factor: 10.0 # TODO: Tune this. It's 10.0 in official example
 
 ## Reference: https://github.com/ericperko/ros_navigation/blob/master/costmap_2d/launch/example_params.yaml
 # global_frame: /map

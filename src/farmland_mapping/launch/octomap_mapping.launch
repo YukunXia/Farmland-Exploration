@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-    <node pkg="octomap_server" type="octomap_server_node" name="octomap_server">
+    <node pkg="octomap_server2" type="octomap_server_node" name="octomap_server"  output="screen" >
         <!-- Static global frame in which the map will be published. A transform from sensor data to this frame needs to be available when dynamically building maps. -->
         <param name="frame_id" type="str" value="world" />
 
@@ -15,7 +15,7 @@
 
         <!-- Maximum range in meter for inserting point cloud data when dynamically building a map. Limiting the range to something useful (e.g. 5m) prevents spurious erroneous points far away from the robot. -->
         <!-- <param name = "sensor_model/max_range" type="double" value = "20.0" /> -->
-        <param name = "sensor_model/max_range" type="double" value = "-1" />
+        <param name = "sensor_model/max_range" type="double" value = "15.0" />
 
         <!-- Minimum and maximum probability for clamping when dynamically building a map -->
         <param name = "sensor_model/min" type="double" value = "0.12" />
@@ -29,7 +29,7 @@
         <param name = "filter_ground" type="bool" value = "true" />
 
         <!-- Distance threshold for points (in z direction) to be segmented to the ground plane -->
-        <param name = "ground_filter/distance" type="double" value = "0.04" />
+        <param name = "ground_filter/distance" type="double" value = "0.3" />
         <!-- Angular threshold of the detected plane from the horizontal plane to be detected as ground -->
         <param name = "ground_filter/angle" type="double" value = "0.15" />
         <!-- Distance threshold from z=0 for a plane to be detected as ground (4th coefficient of the plane equation from PCL) -->
