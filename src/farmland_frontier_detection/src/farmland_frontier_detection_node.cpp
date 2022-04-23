@@ -9,7 +9,7 @@
 #define FD_MARKER_NS "frontier_detection_ns"
 #define FD_MARKER_LIFETIME 1
 
-#define COST_MAP "/planner/costmap/costmap"
+#define COST_MAP "/global_planner_for_frontier/costmap/costmap"
 // #define COST_MAP "/projected_map"
 
 ros::Subscriber occupancy_grid_sub;
@@ -130,7 +130,7 @@ int main(int argc, char **argv) {
   service = nh.advertiseService("get_frontiers", getFrontiers);
   pub_marker_array = nh.advertise<visualization_msgs::MarkerArray>(
       "/farmland_frontier_detection/marker_array", 5);
-      
+
   while (ros::ok()) {
     pub_marker_array.publish(frontier_markers);
     ros::spinOnce();

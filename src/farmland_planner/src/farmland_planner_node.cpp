@@ -121,8 +121,8 @@ getGlobalPlan(const geometry_msgs::PoseStamped &start_pose,
       ROS_INFO("Planner node: No feasible plan founded");
     }
   } else {
-    ROS_ERROR(
-        "Planner node: Failed to call service /planner/planner/make_plan");
+    ROS_ERROR("Planner node: Failed to call service "
+              "/global_planner_for_planning/planner/make_plan");
   }
   return result;
 }
@@ -145,8 +145,8 @@ int main(int argc, char **argv) {
   ros::init(argc, argv, "farmland_planner_node");
   ros::NodeHandle nh;
 
-  global_planner_client =
-      nh.serviceClient<nav_msgs::GetPlan>("/planner/planner/make_plan");
+  global_planner_client = nh.serviceClient<nav_msgs::GetPlan>(
+      "/global_planner_for_planning/planner/make_plan");
   robot_state_sub = nh.subscribe("/husky_curr_state", 100, robotStateCallback);
   ac_ptr_PP = std::make_shared<PPClient>(action_server_name, true);
   checkPurePuresuitReadiness();
@@ -205,7 +205,8 @@ int main(int argc, char **argv) {
       if (feedback.dist_to_goal < DIST_TO_GOAL_THRESHOLD) {
         ac_ptr_PP->cancelGoal();
       }
-      ros::Duration frontier_call_duration = ros::Time::now() - last_frontier_call;
+      ros::Duration frontier_call_duration =
+          ros::Time::now() - last_frontier_call;
       if (frontier_call_duration.toSec() > FRONTIER_PLANNING_PERIOD) {
         ac_ptr_PP->cancelGoal();
       }

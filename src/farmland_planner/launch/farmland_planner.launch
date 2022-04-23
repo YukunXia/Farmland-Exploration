@@ -8,8 +8,16 @@
     <!-- https://github.com/ros-planning/navigation/blob/jade-devel/costmap_2d/include/costmap_2d/costmap_2d_ros.h -->
     <!-- We don't need the costmap node, since it's included in the global planner -->
 
-    <node pkg="global_planner" type="planner" name="planner">
-        <rosparam file="$(find farmland_planner)/launch/global_planner.yaml" command="load" ns="costmap" />
+    <!-- <node pkg="global_planner" type="planner" name="planner">
+        <rosparam file="$(find farmland_planner)/launch/global_planner_for_planning.yaml" command="load" ns="costmap" />
+    </node>  -->
+
+    <node pkg="global_planner" type="planner" name="global_planner_for_planning">
+        <rosparam file="$(find farmland_planner)/launch/global_planner_for_planning.yaml" command="load" ns="costmap" />
+    </node> 
+
+    <node pkg="global_planner" type="planner" name="global_planner_for_frontier">
+        <rosparam file="$(find farmland_planner)/launch/global_planner_for_frontier.yaml" command="load" ns="costmap" />
     </node> 
     <!-- https://answers.ros.org/question/304965/launch-global_planner-without-move_base/ -->
 
