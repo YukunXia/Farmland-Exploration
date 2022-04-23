@@ -76,7 +76,7 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
   <xacro:include filename="$(find farmland_simulator)/urdf/accessories/sick_lms1xx_mount.urdf.xacro"/>
   <xacro:include filename="$(find farmland_simulator)/urdf/accessories/sensor_arch.urdf.xacro"/>
   <!-- <xacro:include filename="$(find farmland_simulator)/urdf/accessories/vlp16_mount.urdf.xacro"/> -->
-  <xacro:include filename="$(find farmland_simulator)/urdf/accessories/hdl32_mount.urdf.xacro"/>
+  <xacro:include filename="$(find farmland_simulator)/urdf/accessories/hdl64_mount.urdf.xacro"/>
 
   <xacro:property name="M_PI" value="3.14159"/>
 

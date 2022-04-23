@@ -7,7 +7,7 @@
   <xacro:arg name="point_cloud_topic" default="points" />
   <xacro:property name="point_cloud_topic" value="$(arg point_cloud_topic)" />
 
-  <xacro:include filename="$(find farmland_simulator)/urdf/accessories/VLP-16.urdf.xacro" />
+  <xacro:include filename="$(find farmland_simulator)/urdf/accessories/HDL-32E.urdf.xacro" />
 
   <xacro:macro name="vlp16_mount" params="prefix parent_link topic organize_cloud gpu height:=0.12 *origin">
     <!--
@@ -87,8 +87,8 @@
       <origin xyz="0 0 ${height}" rpy="0 0 0"/>
     </joint>
 
-    <xacro:VLP-16 parent="${prefix}vlp16_mount_plate"  topic="${point_cloud_topic}" organize_cloud="${organize_cloud}" gpu="${gpu}">
+    <xacro:HDL-32E parent="${prefix}vlp16_mount_plate"  topic="${point_cloud_topic}" organize_cloud="${organize_cloud}" gpu="${gpu}">
       <origin xyz="0 0 0" rpy="0 0 0" />
-    </xacro:VLP-16>
+    </xacro:HDL-32E>
   </xacro:macro>
 </robot>
