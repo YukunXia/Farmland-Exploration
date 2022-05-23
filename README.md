@@ -1,3 +1,10 @@
+## Video
+
+[![Watch the video](https://img.youtube.com/vi/yeF6xDfmzNk/0.jpg)](https://www.youtube.com/watch?v=yeF6xDfmzNk)
+<figcaption align = "center">
+  <b> Click the above image to watch the video </b>
+</figcaption>
+
 ## Environments
 
 - farmland_with_walls.world
