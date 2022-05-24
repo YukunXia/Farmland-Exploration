@@ -5,10 +5,9 @@
   <b> Click the above image to watch the video </b>
 </figcaption>
 
-## Environments
+## Poster
 
-- farmland_with_walls.world
-![farmland_with_walls](images/farmland_with_walls_gazebo.jpg)
+![Poster](images/farmland_exploration_poster.png)
 
 ## Prerequisites
 
@@ -34,32 +33,13 @@ source devel/setup.bash
 roslaunch farmland_simulator husky_farmland.launch
 ```
 
-- Run the mapping server
+- After simulation environment and rviz are fully loaded, run the following command to start exploration
 
 ```
-roslaunch farmland_mapping octomap_mapping.launch
+rosrun farmland_planner farmland_planner_node
 ```
 
-- Move the robot by, for example,
-
-```
-rostopic pub /husky_velocity_controller/cmd_vel geometry_msgs/Twist "linear:
-        x: 0.5
-        y: 0.0
-        z: 0.0
-angular:
-        x: 0.0
-        y: 0.0
-        z: 0.0" -r 10
-```
 
 ### Notes
-
-* To switch the simulation environment, please change the `world_name` arg in `husky_farmland.launch`. Options are listed below.
-    * farmland_test.world
-    * farmland_with_walls.world
-    * farmland_with_walls_simplified.world
-    * cylinder_world.world
-    * cylinder_world_simplified.world
 
 * The official Husky document: https://www.clearpathrobotics.com/assets/guides/kinetic/husky/HuskyFrontiers.html#instructions
